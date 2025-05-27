@@ -16,7 +16,9 @@ electron.contextBridge.exposeInMainWorld("ipcRenderer", {
   invoke(...args) {
     const [channel, ...omit] = args;
     return electron.ipcRenderer.invoke(channel, ...omit);
+  },
+  // Custom APis //
+  testCallScript: async () => {
+    return await electron.ipcRenderer.invoke("test-call-script");
   }
-  // You can expose other APTs you need here.
-  // ...
 });

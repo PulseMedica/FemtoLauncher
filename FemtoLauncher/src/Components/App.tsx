@@ -1,6 +1,4 @@
 import { useState } from 'react'
-import reactLogo from '../assets/react.svg'
-import viteLogo from '/electron-vite.animate.svg'
 import '../Styles/App.css'
 import logo from "../assets/logo.png"
 
@@ -8,6 +6,15 @@ function App() {
   const [btnLaunchUI, setBtnLaunchUi] = useState(false); // Should be a preload function that sets its state.
   const [serverLogs, setServerLogs] = useState([]); // Should be a preload function that sets its state.
   const [serverArtifact, setServerArtifact] = useState(false); // Should be a preload function that sets its
+
+  const handleBtnClick = async() => {
+    try{
+      const res = await window.ipcRenderer.testCallScript(); // Why is this function not seen?
+    }
+    catch(e) {
+      console.log(e);
+    }
+  }
 
   return (
     <div className="app-container">
