@@ -2,33 +2,42 @@ import { useState } from 'react'
 import reactLogo from '../assets/react.svg'
 import viteLogo from '/electron-vite.animate.svg'
 import '../Styles/App.css'
+import logo from "../assets/logo.png"
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [btnLaunchUI, setBtnLaunchUi] = useState(false); // Should be a preload function that sets its state.
+  const [serverLogs, setServerLogs] = useState([]); // Should be a preload function that sets its state.
+  const [serverArtifact, setServerArtifact] = useState(false); // Should be a preload function that sets its
 
   return (
-    <>
-      <div>
-        <a href="https://electron-vite.github.io" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <div className="app-container">
+      <div className="logo-container">
+        <img src={logo} alt="" />
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+      <div className="modal-container">
+          <div className="title">Welcome to FIH Launcher</div>
+          <div className="inputs-container">
+            <button id="btn-sim-server">
+              Start Simulation Server
+            </button>
+
+            <button id="btn-target-server">
+              Start Target Server
+            </button>
+
+            <button id="btn-launch-ui"> {/* Perhaps can have it where it's only enabled if PMServer.exe is running. */}
+              Launch Software
+            </button>
+
+            <div className="output-container">
+              This is where you'd put server logs.
+            </div>
+
+          </div>
+        </div>
+    </div>
+
+
   )
 }
 
