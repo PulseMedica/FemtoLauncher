@@ -9,10 +9,11 @@ function App() {
   const [serverLogs, setServerLogs] = useState([]); // Should be a preload function that sets its state.
   const [serverArtifact, setServerArtifact] = useState(false); // Should be a preload function that sets its
 
+  // 0) This is an example of how to invoke functions from the main process.
+  // - window.ipcRenderer.invoke("name-of-function")
   const handleClick = async() => {
     const result = await window.ipcRenderer.invoke('test-call');
     console.log(result);
-
   }
 
   return (
