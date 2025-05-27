@@ -19,8 +19,6 @@ contextBridge.exposeInMainWorld('ipcRenderer', {
     return ipcRenderer.invoke(channel, ...omit)
   },
 
-  // Custom APis //
-  testCallScript: async () => {
-    return await ipcRenderer.invoke('test-call-script');
-  }
+  // You can expose other APTs you need here.
+  // ...
 })

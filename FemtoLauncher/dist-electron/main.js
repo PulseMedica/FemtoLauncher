@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain } from "electron";
+import { app, BrowserWindow } from "electron";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
@@ -14,7 +14,7 @@ function createWindow() {
   win = new BrowserWindow({
     icon: path.join(process.env.VITE_PUBLIC, "electron-vite.svg"),
     webPreferences: {
-      preload: path.join(__dirname, "../preload/preload.mjs")
+      preload: path.join(__dirname, "preload.mjs")
     }
   });
   win.webContents.on("did-finish-load", () => {
@@ -37,11 +37,7 @@ app.on("activate", () => {
     createWindow();
   }
 });
-app.whenReady().then(() => {
-  ipcMain.handle("test-call-script", () => "pong");
-  console.log("huh");
-  createWindow();
-});
+app.whenReady().then(createWindow);
 export {
   MAIN_DIST,
   RENDERER_DIST,
