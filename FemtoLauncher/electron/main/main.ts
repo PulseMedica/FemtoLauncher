@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow, ipcMain } from 'electron'
 import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
@@ -65,4 +65,16 @@ app.on('activate', () => {
   }
 })
 
-app.whenReady().then(createWindow)
+app.whenReady().then(() => {
+    createWindow();
+
+    // 1) Test call
+    ipcMain.handle('test-call', async(event, ...args) => {
+      console.log("I have been called!")
+      const result = "passed back to renderer"
+      return result
+    })
+
+    // 2) Put other functions you want the renderer to be able to call here...
+  }
+)

@@ -19,4 +19,6 @@ electron.contextBridge.exposeInMainWorld("ipcRenderer", {
   }
   // You can expose other APTs you need here.
   // ...
+  // -> With this template, we don't actually "export" any preload functions here.
+  // -> You can simply define them all in the main process.
 });

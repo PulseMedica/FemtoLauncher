@@ -9,6 +9,12 @@ function App() {
   const [serverLogs, setServerLogs] = useState([]); // Should be a preload function that sets its state.
   const [serverArtifact, setServerArtifact] = useState(false); // Should be a preload function that sets its
 
+  const handleClick = async() => {
+    const result = await window.ipcRenderer.invoke('test-call');
+    console.log(result);
+
+  }
+
   return (
     <div className="app-container">
       <div className="logo-container">
@@ -17,7 +23,7 @@ function App() {
       <div className="modal-container">
           <div className="title">Welcome to FIH Launcher</div>
           <div className="inputs-container">
-            <button id="btn-sim-server">
+            <button id="btn-sim-server" onClick={handleClick}>
               Start Simulation Server
             </button>
 

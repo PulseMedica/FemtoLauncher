@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from "electron";
+import { app, BrowserWindow, ipcMain } from "electron";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
@@ -37,7 +37,16 @@ app.on("activate", () => {
     createWindow();
   }
 });
-app.whenReady().then(createWindow);
+app.whenReady().then(
+  () => {
+    createWindow();
+    ipcMain.handle("test-call", async (event, ...args) => {
+      console.log("I have been called!");
+      const result = "passed back to renderer";
+      return result;
+    });
+  }
+);
 export {
   MAIN_DIST,
   RENDERER_DIST,
