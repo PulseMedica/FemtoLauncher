@@ -73,6 +73,21 @@ app.whenReady().then(() => {
   }
 )
 
+// Helper functions
+const isRunning = (query: any) => {
+  return new Promise((resolve, reject) => {
+    if (!query) {
+      reject(new Error('No query provided'));
+    }
+
+    exec(`tasklist`, (err, stdout, stderr) => {
+      resolve(stdout.toLowerCase().indexOf(query.toLowerCase()) > -1);
+      console.log(err);
+      console.log(stderr);
+    });
+  });
+};
+
 // 0) For run-config.
 ipcMain.handle('run-config', async (event, ...args) => {
   console.log("------- run-config has been called -------");
@@ -144,3 +159,40 @@ ipcMain.handle('run-config', async (event, ...args) => {
 });
 
 // 1) For run-server-sim
+ipcMain.handle('run-server-sim', async(event, ...args) => {
+    const serverPath = "c:/Users/nathan_pulsemedica/AppData/Local/PulseMedica/FIH/1.0.0.779/server/PMServer.exe"
+    const child = exec(serverPath + ' sim');
+
+    // Send stdout / stderr data back to the renderer process through a channel - that the renderer then listens on.
+    // I guess you could just send it all back as 1 object - this way just shows the messages "live".
+    child.stdout?.on('data', data => {
+      console.log(`stdout: ${data}`);
+      event.sender.send('server-sim-stdout', data.toString());
+    });
+
+    child.stderr?.on('data', data => {
+      console.error(`stderr: ${data}`);
+      // Send stderr data back to the renderer process through a channel.
+      event.sender.send('server-sim-stderr', data.toString());
+    });
+
+    child.on('close', code => {
+      console.log(`Server process exited with code ${code}`);
+      // Send close code back to the renderer process through a channel.
+      event.sender.send('server-sim-close', code);
+    });
+})
+
+// 2) Check if server is running. I took this from femtoUI.
+ipcMain.handle('is-server-live', async () => {
+  isRunning("PMServer.exe")
+    .then(result => {
+      const isRunning = result as boolean;
+      if (isRunning){
+        return true;
+      }
+      else {
+        return false;
+      }
+    })
+})

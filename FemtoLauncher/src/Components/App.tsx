@@ -5,12 +5,12 @@ import '../Styles/App.css'
 import logo from "../assets/logo.png"
 
 function App() {
-  const [btnLaunchUI, setBtnLaunchUi] = useState(false); // Should be a preload function that sets its state.
-  const [outputLines, setOutputLines] = useState([]);
-  const [isLoading, setIsLoading] = useState(null); // Whether the script is done executing or not. True = exuting, False = done, Null = no script was called yet.
+  const [btnLaunchUI, setBtnLaunchUi] = useState(true); // Determines if start ui button disabled == true or false.
+  const [outputLines, setOutputLines] = useState<string[]>([]);;
 
   // Runs config.
   const handleRunConfigClick = async() => {
+    setOutputLines([])
     const resultObject = await window.ipcRenderer.invoke('run-config');
     const results = resultObject.outputLines;
     setOutputLines(results);
@@ -30,9 +30,28 @@ function App() {
   };
 
   const handleRunServerSim = async() => {
-    const resultObject = await window.ipcRenderer.invoke('run-server-sim');
-    const results = resultObject.outputLines;
-    setOutputLines(results);
+    setOutputLines([])
+    const result = await window.ipcRenderer.invoke('run-server-sim');
+
+    // Listen on channels coming from main process to update state
+    window.ipcRenderer.on('server-sim-stdout', (event, data) => {
+      console.log('Renderer received stdout:', data);
+      setOutputLines(prevLines => [...prevLines, data]);
+    });
+
+    window.ipcRenderer.on('server-sim-stderr', (event, data) => {
+      console.error('Renderer received stderr:', data);
+      setOutputLines(prevLines => [...prevLines, data]);
+    });
+
+    window.ipcRenderer.on('server-sim-close', (event, code) => {
+      console.log('Renderer received close code:', code);
+      setOutputLines(prevLines => [...prevLines, code]);
+    });
+
+    // Check if server is ran correctly, then enable UI button.
+    const isRunning = await window.ipcRenderer.invoke('is-server-live');
+    setBtnLaunchUi(isRunning)
   }
 
   return (
@@ -54,16 +73,20 @@ function App() {
               Start Target Server
             </button>
 
-            <button id="btn-launch-ui"> {/* Perhaps can have it where it's only enabled if PMServer.exe is running. */}
+            <button id="btn-launch-ui" disabled={btnLaunchUI}> {/* enable / disable based on state. */}
               Launch Software
             </button>
 
             <div className="output-container">
-                {outputLines.map((line, index) => (
-                  <div key={index} className={`${getLineClass(line)}`}>
-                    {'\n' + line}
-                  </div>
-                ))}
+                {!outputLines ? ( /* If the script is still loading */
+                    <div>Loading...</div>
+                ) : (
+                    outputLines.map((line, index) => (
+                        <div key={index} className={`${getLineClass(line)}`}>
+                            {'\n' + line}
+                        </div>
+                    ))
+                )}
             </div>
 
           </div>
