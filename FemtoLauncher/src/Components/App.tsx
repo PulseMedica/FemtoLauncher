@@ -6,14 +6,33 @@ import logo from "../assets/logo.png"
 
 function App() {
   const [btnLaunchUI, setBtnLaunchUi] = useState(false); // Should be a preload function that sets its state.
-  const [serverLogs, setServerLogs] = useState([]); // Should be a preload function that sets its state.
-  const [serverArtifact, setServerArtifact] = useState(false); // Should be a preload function that sets its
+  const [outputLines, setOutputLines] = useState([]);
+  const [isLoading, setIsLoading] = useState(null); // Whether the script is done executing or not. True = exuting, False = done, Null = no script was called yet.
 
-  // 0) This is an example of how to invoke functions from the main process.
-  // - window.ipcRenderer.invoke("name-of-function")
-  const handleClick = async() => {
-    const result = await window.ipcRenderer.invoke('test-call');
-    console.log(result);
+  // Runs config.
+  const handleRunConfigClick = async() => {
+    const resultObject = await window.ipcRenderer.invoke('run-config');
+    const results = resultObject.outputLines;
+    setOutputLines(results);
+  }
+
+  // Helper function to determine the class for each line
+  const getLineClass = (line:string) => {
+    if (line.startsWith('[Error]')){
+      return 'error-line'
+    }
+    else if (line.startsWith('[Success]')){
+      return 'success-line'
+    }
+    else{
+      return 'output-line'
+    }
+  };
+
+  const handleRunServerSim = async() => {
+    const resultObject = await window.ipcRenderer.invoke('run-server-sim');
+    const results = resultObject.outputLines;
+    setOutputLines(results);
   }
 
   return (
@@ -24,7 +43,10 @@ function App() {
       <div className="modal-container">
           <div className="title">Welcome to FIH Launcher</div>
           <div className="inputs-container">
-            <button id="btn-sim-server" onClick={handleClick}>
+            <button id="btn-run-config" onClick={handleRunConfigClick}>
+              Run Config
+            </button>
+            <button id="btn-sim-server" onClick={handleRunServerSim}>
               Start Simulation Server
             </button>
 
@@ -37,14 +59,16 @@ function App() {
             </button>
 
             <div className="output-container">
-              This is where you'd put server logs.
+                {outputLines.map((line, index) => (
+                  <div key={index} className={`${getLineClass(line)}`}>
+                    {'\n' + line}
+                  </div>
+                ))}
             </div>
 
           </div>
         </div>
     </div>
-
-
   )
 }
 

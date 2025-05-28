@@ -2,6 +2,8 @@ import { app, BrowserWindow, ipcMain } from "electron";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
+import { join } from "path";
+import { exec } from "node:child_process";
 createRequire(import.meta.url);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 process.env.APP_ROOT = path.join(__dirname, "..");
@@ -40,13 +42,62 @@ app.on("activate", () => {
 app.whenReady().then(
   () => {
     createWindow();
-    ipcMain.handle("test-call", async (event, ...args) => {
-      console.log("I have been called!");
-      const result = "passed back to renderer";
-      return result;
-    });
   }
 );
+ipcMain.handle("run-config", async (event, ...args) => {
+  console.log("------- run-config has been called -------");
+  const config_exe_path = join(__dirname, "..", "electron/main/scripts/config.exe");
+  return new Promise((resolve, reject) => {
+    var _a, _b;
+    let combinedOutputLines = [];
+    let stdoutData = "";
+    let stderrData = "";
+    const child = exec(config_exe_path);
+    (_a = child.stdout) == null ? void 0 : _a.on("data", (data) => {
+      const chunk = data.toString();
+      stdoutData += chunk;
+      chunk.split("\n").forEach((line) => {
+        if (line.trim()) {
+          combinedOutputLines.push(line);
+          console.log(`${line}`);
+        }
+      });
+    });
+    (_b = child.stderr) == null ? void 0 : _b.on("data", (data) => {
+      const chunk = data.toString();
+      stderrData += chunk;
+      chunk.split("\n").forEach((line) => {
+        if (line.trim()) {
+          combinedOutputLines.push(line);
+          console.log(`${line}`);
+        }
+      });
+    });
+    child.on("close", (code) => {
+      console.log(`child process exited with code ${code}`);
+      const result = {
+        // Note that stdout & stderr aren't actually used, but if you need them here they are.
+        stdout: stdoutData,
+        stderr: stderrData,
+        outputLines: combinedOutputLines,
+        // 1 array that has the output. This is to maintain sequential ordering.
+        exitCode: code,
+        success: code === 0
+      };
+      if (code === 0) {
+        resolve(result);
+      } else {
+        const error = new Error(`Child process exited with code ${code}`);
+        reject(error);
+      }
+    });
+    child.on("error", (err) => {
+      console.error("Failed to start child process.", err);
+      `Failed to start process: ${err.message}`;
+      reject(err);
+    });
+  });
+});
 export {
   MAIN_DIST,
   RENDERER_DIST,

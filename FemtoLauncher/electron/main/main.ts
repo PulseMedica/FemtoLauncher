@@ -2,6 +2,9 @@ import { app, BrowserWindow, ipcMain } from 'electron'
 import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
+import { join } from 'path';
+import { exec, spawn } from "node:child_process";
+import { config } from 'node:process';
 
 const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -67,14 +70,77 @@ app.on('activate', () => {
 
 app.whenReady().then(() => {
     createWindow();
-
-    // 1) Test call
-    ipcMain.handle('test-call', async(event, ...args) => {
-      console.log("I have been called!")
-      const result = "passed back to renderer"
-      return result
-    })
-
-    // 2) Put other functions you want the renderer to be able to call here...
   }
 )
+
+// 0) For run-config.
+ipcMain.handle('run-config', async (event, ...args) => {
+  console.log("------- run-config has been called -------");
+  const config_exe_path = join(__dirname, "..", "electron/main/scripts/config.exe");
+
+  return new Promise((resolve, reject) => {
+    let combinedOutputLines: string[] = [];
+    let stdoutData = '';
+    let stderrData = '';
+
+    const child = exec(config_exe_path);
+
+    child.stdout?.on('data', data => {
+      const chunk = data.toString();
+      stdoutData += chunk;
+      chunk.split('\n').forEach((line: string) => {
+        if (line.trim()) {
+          combinedOutputLines.push(line); // Push onto return object.
+          console.log(`${line}`);
+        }
+      });
+    });
+
+    child.stderr?.on('data', data => {
+      const chunk = data.toString();
+      stderrData += chunk;
+      chunk.split('\n').forEach((line: string) => {
+        if (line.trim()) {
+          combinedOutputLines.push(line);
+          console.log(`${line}`); // Push onto return object.
+        }
+      });
+    });
+
+    child.on('close', (code) => {
+      console.log(`child process exited with code ${code}`);
+      const result = {
+        // Note that stdout & stderr aren't actually used, but if you need them here they are.
+        stdout: stdoutData,
+        stderr: stderrData,
+        outputLines: combinedOutputLines, // 1 array that has the output. This is to maintain sequential ordering.
+        exitCode: code,
+        success: code === 0
+      };
+
+      if (code === 0) {
+        resolve(result);
+      } else {
+        const error = new Error(`Child process exited with code ${code}`);
+        reject(error);
+      }
+    });
+
+    child.on('error', (err) => {
+      // This is for if there's an error with the file itself. That way the UI can still show it.
+      console.error('Failed to start child process.', err);
+      const errorLine = `Failed to start process: ${err.message}`;
+      const finalOutputLines: string[] = [...combinedOutputLines, errorLine];
+
+      const result = {
+        stdout: stdoutData,
+        stderr: stderrData,
+        outputLines: finalOutputLines,
+        success: false
+      };
+      reject(err);
+    });
+  });
+});
+
+// 1) For run-server-sim
