@@ -12,3 +12,5 @@ Exploratory repository to develop a launcher application to launch the FIH softw
 [X] Fix bug where starting the app twice clears the UI?
 [X] Have a "kill app" button which closes both server and UI.
 [ ] "Edit config" functionality?
+
+[ ] (eventually) Test edge case scenarios and see if am properly sending the right console messages.

@@ -40,25 +40,36 @@
 }
 
 .inputs-container button{ /* All buttons have the same length. */
+  font-family: 'Roboto Mono', monospace;
   width: 300px;
 }
 
-.inputs-container #btn-sim-server, .inputs-container #btn-target-server, .inputs-container #btn-run-config{
-  background-color: #BEC5CD;
+#btn-run-config, #btn-launch-sw, #btn-close-sw{
   border-radius: 12px;
   padding: 12px;
+  box-shadow: rgba(6, 24, 44, 0.4) 0px 0px 0px 2px, rgba(6, 24, 44, 0.65) 0px 4px 6px -1px, rgba(255, 255, 255, 0.08) 0px 1px 0px inset;
+  border: none;
+}
+
+#btn-run-config:hover, #btn-launch-sw:hover, #btn-close-sw:hover{
+  scale: 1.01;
+  transition: 0.1s;
+}
+
+#btn-run-config:not(hover), #btn-launch-sw:not(hover), #btn-close-sw:not(hover){
+  transition: 0.1s;
+}
+
+#btn-run-config{
+  background-color: #BEC5CD;
 }
 
 #btn-launch-sw{
   background-color: #05DDDD; /* PMCyan */
-  border-radius: 12px;
-  padding: 12px;
 }
 
 #btn-close-sw{
   background-color: #ff9dab;
-  border-radius: 12px;
-  padding: 12px;
 }
 
 .mode-selector-container{
@@ -93,7 +104,6 @@
   background-color: #05DDDD;
 
 }
-
 
 .output-container{
   margin-top: 12px;
