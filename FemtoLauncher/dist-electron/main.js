@@ -183,7 +183,37 @@ ipcMain.handle("run-sw-target", async (event) => {
   }, 1e3);
   return { success: true, message: "Server process initiated successfully & UI opened." };
 });
-ipcMain.handle("kill-software", async (event) => {
+ipcMain.handle("close-software", async (event, processName) => {
+  const serverProcess = "PMServer.exe";
+  const uiProcess = "FSS UI.exe";
+  const result = {
+    serverResponse: "[Error] Some error occurred while trying to close PMServer.exe",
+    uiResponse: "[Error] Some error occurred while trying to close FSS UI.exe"
+  };
+  const killProcess = (process2, label, timeoutMs = 1e4) => {
+    return Promise.race([
+      new Promise((resolve) => {
+        exec(`taskkill /IM "${process2}" /F`, (err, stdout, stderr) => {
+          if (err) {
+            resolve(`[Error] Could not kill ${label}.`);
+          } else {
+            resolve(`[Success] ${label} successfully killed.`);
+          }
+        });
+      }),
+      // Timeout in case it takes too long to return from the promise.
+      new Promise(
+        (resolve) => setTimeout(() => resolve(`[Error] Timeout while trying to kill ${label}.`), timeoutMs)
+      )
+    ]);
+  };
+  await Promise.all([
+    killProcess(serverProcess, "PMServer"),
+    killProcess(uiProcess, "FSS UI")
+  ]);
+  result.serverResponse = "[Success] PMServer.exe was closed successfully.";
+  result.uiResponse = "[Success] FSS UI.exe was closed successfully.";
+  return result;
 });
 export {
   MAIN_DIST,

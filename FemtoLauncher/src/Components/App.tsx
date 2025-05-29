@@ -71,8 +71,10 @@ function App() {
     }
   }
 
-  const handleKillSoftware = async() => {
-    const result = await window.ipcRenderer.invoke("kill-software")
+  const handleCloseSoftware = async() => {
+    const result = await window.ipcRenderer.invoke("close-software")
+    setOutputLines(prevLines => [...prevLines, result.serverResponse])
+    setOutputLines(prevLines => [...prevLines, result.uiResponse])
   }
 
   return (
@@ -101,6 +103,10 @@ function App() {
 
             <button id="btn-launch-sw" onClick={() => handleRunSoftware(mode)}> {/* Starts both the server and UI in one go. */}
               Launch Software
+            </button>
+
+            <button id="btn-close-sw" onClick={handleCloseSoftware}>
+              Close Software
             </button>
 
             <div className="output-container">

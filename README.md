@@ -10,5 +10,5 @@ Exploratory repository to develop a launcher application to launch the FIH softw
     - look at start.ps1 for example.
 [X] Checkbox to pick between SIM or TARGET.
 [X] Fix bug where starting the app twice clears the UI?
-[ ] Have a "kill app" button which closes both server and UI.
+[X] Have a "kill app" button which closes both server and UI.
 [ ] "Edit config" functionality?

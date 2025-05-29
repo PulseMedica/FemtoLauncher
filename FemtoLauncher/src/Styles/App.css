@@ -55,6 +55,12 @@
   padding: 12px;
 }
 
+#btn-close-sw{
+  background-color: #ff9dab;
+  border-radius: 12px;
+  padding: 12px;
+}
+
 .mode-selector-container{
   width: 300px;
   display: flex;
