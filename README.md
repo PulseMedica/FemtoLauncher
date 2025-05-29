@@ -8,7 +8,7 @@ Exploratory repository to develop a launcher application to launch the FIH softw
 [X] Be able to run PMServer.exe and read its stdout, display to user.
 [X] Change launch software button to BOTH start PMserver.exe and FSS UI.exe. PMServer will create a "serverReady.txt" file which you wait for and once it's there you open UI.
     - look at start.ps1 for example.
-[ ] Checkbox to pick between SIM or TARGET.
-[ ] Fix bug where starting the app twice clears the UI?
+[X] Checkbox to pick between SIM or TARGET.
+[X] Fix bug where starting the app twice clears the UI?
 [ ] Have a "kill app" button which closes both server and UI.
 [ ] "Edit config" functionality?
