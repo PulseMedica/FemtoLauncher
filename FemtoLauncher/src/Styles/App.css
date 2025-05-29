@@ -111,6 +111,27 @@
   overflow-y: scroll;
 }
 
+/* Scrollbar Track */
+.output-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+/* Scrollbar Thumb */
+.output-container::-webkit-scrollbar-thumb {
+  background: #444C55;
+  border-radius: 5px;
+}
+
+/* Scrollbar Thumb on hover */
+.output-container::-webkit-scrollbar-thumb:hover {
+  background: #888;
+}
+
+/* Scrollbar Track Background */
+.output-container::-webkit-scrollbar-track {
+  background: black;
+}
+
 .error-line{
   line-height: 16px;
   color: rgb(255, 155, 155);
