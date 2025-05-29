@@ -13,4 +13,10 @@ Exploratory repository to develop a launcher application to launch the FIH softw
 [X] Have a "kill app" button which closes both server and UI.
 [ ] "Edit config" functionality?
 
+[ ] Need a good way to communicate the state of everything to the user.
+    - State of script(s) running.
+    - State of server?
+    - etc / whatever else might be useful.
+
+
 [ ] (eventually) Test edge case scenarios and see if am properly sending the right console messages.
