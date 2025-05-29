@@ -153,6 +153,7 @@ ipcMain.handle('run-config', async (event, ...args) => {
 
 // 1) Run software in sim.
 ipcMain.handle('run-sw-sim', async (event) => {
+    console.log("--------- Running software in simulation ---------")
     const server_ready_path = join(__dirname, "..", "server_ready.txt");
     const serverPath = "c:/Users/nathan_pulsemedica/AppData/Local/PulseMedica/FIH/1.0.0.779/server/PMServer.exe"
     const uiPath = "C:/Users/nathan_pulsemedica/AppData/Local/PulseMedica/FIH/1.0.0.779/client/FSS UI.exe"
@@ -170,17 +171,17 @@ ipcMain.handle('run-sw-sim', async (event) => {
     // These listeners will continue to send data as long as the child process runs.
     child.stdout?.on('data', data => {
         console.log(`stdout: ${data}`);
-        event.sender.send('server-sim-stdout', data.toString());
+        event.sender.send('server-stdout', data.toString());
     });
 
     child.stderr?.on('data', data => {
         console.error(`stderr: ${data}`);
-        event.sender.send('server-sim-stderr', data.toString());
+        event.sender.send('server-stderr', data.toString());
     });
 
     child.on('close', code => {
         console.log(`Server process exited with code ${code}`);
-        event.sender.send('server-sim-close', code);
+        event.sender.send('server-close', code);
     });
 
     // 4) Monitor for server_ready.txt. Must be done this way to ensure main process isn't interrupted.
@@ -207,6 +208,72 @@ ipcMain.handle('run-sw-sim', async (event) => {
         }
     }, 1000); // Check every second
 
-    // Return from handle. This is the object hat result = ipcRenderer.invoke() gets.
+    // Return from handle. This is the object hat result = ipcRenderer.invoke() receives.
     return { success: true, message: 'Server process initiated successfully & UI opened.' };
 });
+
+// 2) Run software in target.
+ipcMain.handle('run-sw-target', async (event) => {
+    console.log("--------- Running server in target ---------")
+    const server_ready_path = join(__dirname, "..", "server_ready.txt");
+    const serverPath = "c:/Users/nathan_pulsemedica/AppData/Local/PulseMedica/FIH/1.0.0.779/server/PMServer.exe"
+    const uiPath = "C:/Users/nathan_pulsemedica/AppData/Local/PulseMedica/FIH/1.0.0.779/client/FSS UI.exe"
+
+    // 1) Remove any old server_ready.txt
+    if (fs.existsSync(server_ready_path)){
+        console.log("A server ready file already exists, removing it now.")
+        fs.unlinkSync(server_ready_path);
+    }
+
+    // 2) Run the server
+    const child = exec(serverPath);
+
+    // 3) Send stdout / stderr data back to the renderer process through dedicated channels.
+    // These listeners will continue to send data as long as the child process runs.
+    child.stdout?.on('data', data => {
+        console.log(`stdout: ${data}`);
+        event.sender.send('server-stdout', data.toString());
+    });
+
+    child.stderr?.on('data', data => {
+        console.error(`stderr: ${data}`);
+        event.sender.send('server-stderr', data.toString());
+    });
+
+    child.on('close', code => {
+        console.log(`Server process exited with code ${code}`);
+        event.sender.send('server-close', code);
+    });
+
+    // 4) Monitor for server_ready.txt. Must be done this way to ensure main process isn't interrupted.
+    const timeout = 30; // seconds
+    let timer = 0;
+    const interval = setInterval(() => {
+        if (fs.existsSync(server_ready_path)) {
+            clearInterval(interval);
+
+             // 5) Open the UI
+            event.sender.send('server-ready', true);
+            console.log("Server is ready, opening UI...")
+            exec(`"${uiPath}"`); // Must be quoted to handle spaces.
+        }
+
+        timer++;
+        if (timer > timeout) {
+            clearInterval(interval);
+            console.error("Timeout: server_ready.txt not found.");
+            // Send a specific event for timeout
+            event.sender.send('server-ready', false);
+            // Optionally, kill the child process if it timed out
+            child.kill();
+        }
+    }, 1000); // Check every second
+
+    // Return from handle. This is the object hat result = ipcRenderer.invoke() receives.
+    return { success: true, message: 'Server process initiated successfully & UI opened.' };
+});
+
+// 3) Kill Software - It's more straightforward to just let a .ps1 script handle it.
+ipcMain.handle('kill-software', async(event) => {
+
+})

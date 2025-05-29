@@ -101,6 +101,7 @@ ipcMain.handle("run-config", async (event, ...args) => {
 });
 ipcMain.handle("run-sw-sim", async (event) => {
   var _a, _b;
+  console.log("--------- Running software in simulation ---------");
   const server_ready_path = join(__dirname, "..", "server_ready.txt");
   const serverPath = "c:/Users/nathan_pulsemedica/AppData/Local/PulseMedica/FIH/1.0.0.779/server/PMServer.exe";
   const uiPath = "C:/Users/nathan_pulsemedica/AppData/Local/PulseMedica/FIH/1.0.0.779/client/FSS UI.exe";
@@ -111,15 +112,15 @@ ipcMain.handle("run-sw-sim", async (event) => {
   const child = exec(serverPath + " sim");
   (_a = child.stdout) == null ? void 0 : _a.on("data", (data) => {
     console.log(`stdout: ${data}`);
-    event.sender.send("server-sim-stdout", data.toString());
+    event.sender.send("server-stdout", data.toString());
   });
   (_b = child.stderr) == null ? void 0 : _b.on("data", (data) => {
     console.error(`stderr: ${data}`);
-    event.sender.send("server-sim-stderr", data.toString());
+    event.sender.send("server-stderr", data.toString());
   });
   child.on("close", (code) => {
     console.log(`Server process exited with code ${code}`);
-    event.sender.send("server-sim-close", code);
+    event.sender.send("server-close", code);
   });
   const timeout = 30;
   let timer = 0;
@@ -139,6 +140,50 @@ ipcMain.handle("run-sw-sim", async (event) => {
     }
   }, 1e3);
   return { success: true, message: "Server process initiated successfully & UI opened." };
+});
+ipcMain.handle("run-sw-target", async (event) => {
+  var _a, _b;
+  console.log("--------- Running server in target ---------");
+  const server_ready_path = join(__dirname, "..", "server_ready.txt");
+  const serverPath = "c:/Users/nathan_pulsemedica/AppData/Local/PulseMedica/FIH/1.0.0.779/server/PMServer.exe";
+  const uiPath = "C:/Users/nathan_pulsemedica/AppData/Local/PulseMedica/FIH/1.0.0.779/client/FSS UI.exe";
+  if (fs.existsSync(server_ready_path)) {
+    console.log("A server ready file already exists, removing it now.");
+    fs.unlinkSync(server_ready_path);
+  }
+  const child = exec(serverPath);
+  (_a = child.stdout) == null ? void 0 : _a.on("data", (data) => {
+    console.log(`stdout: ${data}`);
+    event.sender.send("server-stdout", data.toString());
+  });
+  (_b = child.stderr) == null ? void 0 : _b.on("data", (data) => {
+    console.error(`stderr: ${data}`);
+    event.sender.send("server-stderr", data.toString());
+  });
+  child.on("close", (code) => {
+    console.log(`Server process exited with code ${code}`);
+    event.sender.send("server-close", code);
+  });
+  const timeout = 30;
+  let timer = 0;
+  const interval = setInterval(() => {
+    if (fs.existsSync(server_ready_path)) {
+      clearInterval(interval);
+      event.sender.send("server-ready", true);
+      console.log("Server is ready, opening UI...");
+      exec(`"${uiPath}"`);
+    }
+    timer++;
+    if (timer > timeout) {
+      clearInterval(interval);
+      console.error("Timeout: server_ready.txt not found.");
+      event.sender.send("server-ready", false);
+      child.kill();
+    }
+  }, 1e3);
+  return { success: true, message: "Server process initiated successfully & UI opened." };
+});
+ipcMain.handle("kill-software", async (event) => {
 });
 export {
   MAIN_DIST,

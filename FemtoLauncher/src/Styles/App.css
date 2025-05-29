@@ -49,10 +49,43 @@
   padding: 12px;
 }
 
-#btn-launch-ui{
+#btn-launch-sw{
   background-color: #05DDDD; /* PMCyan */
   border-radius: 12px;
   padding: 12px;
+}
+
+.mode-selector-container{
+  width: 100%;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  background: linear-gradient(180deg, #212326 5.8%, #444C55 94.2%);
+  padding: 16px;
+  border-radius: 12px;
+}
+
+.radio-container{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: white;
+  background: #444C55;
+  padding: 12px;
+  border-radius: 8px;
+}
+
+.radio-container input[type=radio]{
+  appearance: none;
+  height: 18px;
+  width: 18px;
+  outline: 1px solid white;
+  border-radius: 50%;
+}
+
+.radio-container input[type=radio]:checked{
+  background-color: #05DDDD;
+
 }
 
 
