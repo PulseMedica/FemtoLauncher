@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { join } from "path";
 import { exec } from "node:child_process";
+import fs from "fs";
 createRequire(import.meta.url);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 process.env.APP_ROOT = path.join(__dirname, "..");
@@ -44,15 +45,6 @@ app.whenReady().then(
     createWindow();
   }
 );
-const isRunning = (query) => {
-  return new Promise((resolve, reject) => {
-    exec(`tasklist`, (err, stdout, stderr) => {
-      resolve(stdout.toLowerCase().indexOf(query.toLowerCase()) > -1);
-      console.log(err);
-      console.log(stderr);
-    });
-  });
-};
 ipcMain.handle("run-config", async (event, ...args) => {
   console.log("------- run-config has been called -------");
   const config_exe_path = join(__dirname, "..", "electron/main/scripts/config.exe");
@@ -107,9 +99,15 @@ ipcMain.handle("run-config", async (event, ...args) => {
     });
   });
 });
-ipcMain.handle("run-server-sim", async (event, ...args) => {
+ipcMain.handle("run-sw-sim", async (event) => {
   var _a, _b;
+  const server_ready_path = join(__dirname, "..", "server_ready.txt");
   const serverPath = "c:/Users/nathan_pulsemedica/AppData/Local/PulseMedica/FIH/1.0.0.779/server/PMServer.exe";
+  const uiPath = "C:/Users/nathan_pulsemedica/AppData/Local/PulseMedica/FIH/1.0.0.779/client/FSS UI.exe";
+  if (fs.existsSync(server_ready_path)) {
+    console.log("A server ready file already exists, removing it now.");
+    fs.unlinkSync(server_ready_path);
+  }
   const child = exec(serverPath + " sim");
   (_a = child.stdout) == null ? void 0 : _a.on("data", (data) => {
     console.log(`stdout: ${data}`);
@@ -123,16 +121,24 @@ ipcMain.handle("run-server-sim", async (event, ...args) => {
     console.log(`Server process exited with code ${code}`);
     event.sender.send("server-sim-close", code);
   });
-});
-ipcMain.handle("is-server-live", async () => {
-  isRunning("PMServer.exe").then((result) => {
-    const isRunning2 = result;
-    if (isRunning2) {
-      return true;
-    } else {
-      return false;
+  const timeout = 30;
+  let timer = 0;
+  const interval = setInterval(() => {
+    if (fs.existsSync(server_ready_path)) {
+      clearInterval(interval);
+      event.sender.send("server-sim-ready", true);
+      console.log("Server is ready, opening UI...");
+      exec(`"${uiPath}"`);
     }
-  });
+    timer++;
+    if (timer > timeout) {
+      clearInterval(interval);
+      console.error("Timeout: server_ready.txt not found.");
+      event.sender.send("server-sim-ready", false);
+      child.kill();
+    }
+  }, 1e3);
+  return { success: true, message: "Server process initiated successfully & UI opened." };
 });
 export {
   MAIN_DIST,

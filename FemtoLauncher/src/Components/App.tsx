@@ -1,11 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import reactLogo from '../assets/react.svg'
 import viteLogo from '/electron-vite.animate.svg'
 import '../Styles/App.css'
 import logo from "../assets/logo.png"
 
 function App() {
-  const [btnLaunchUI, setBtnLaunchUi] = useState(true); // Determines if start ui button disabled == true or false.
   const [outputLines, setOutputLines] = useState<string[]>([]);;
 
   // Runs config.
@@ -29,9 +28,14 @@ function App() {
     }
   };
 
-  const handleRunServerSim = async() => {
+  const handleRunSoftware = async(mode:string) => {
     setOutputLines([])
-    const result = await window.ipcRenderer.invoke('run-server-sim');
+    if (mode === "sim" ){
+      const result = await window.ipcRenderer.invoke('run-sw-sim');
+    }
+    else if (mode === "target") {
+      const result = await window.ipcRenderer.invoke("run-sw-target")
+    }
 
     // Listen on channels coming from main process to update state
     window.ipcRenderer.on('server-sim-stdout', (event, data) => {
@@ -48,10 +52,6 @@ function App() {
       console.log('Renderer received close code:', code);
       setOutputLines(prevLines => [...prevLines, code]);
     });
-
-    // Check if server is ran correctly, then enable UI button.
-    const isRunning = await window.ipcRenderer.invoke('is-server-live');
-    setBtnLaunchUi(isRunning)
   }
 
   return (
@@ -65,15 +65,8 @@ function App() {
             <button id="btn-run-config" onClick={handleRunConfigClick}>
               Run Config
             </button>
-            <button id="btn-sim-server" onClick={handleRunServerSim}>
-              Start Simulation Server
-            </button>
 
-            <button id="btn-target-server">
-              Start Target Server
-            </button>
-
-            <button id="btn-launch-ui" disabled={btnLaunchUI}> {/* enable / disable based on state. */}
+            <button id="btn-launch-ui" onClick={() => handleRunSoftware("sim")}> {/* Starts both the server and UI in one go. */}
               Launch Software
             </button>
 

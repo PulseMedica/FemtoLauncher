@@ -5,6 +5,7 @@ import path from 'node:path'
 import { join } from 'path';
 import { exec, spawn } from "node:child_process";
 import { config } from 'node:process';
+import fs from "fs"
 
 const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -74,19 +75,11 @@ app.whenReady().then(() => {
 )
 
 // Helper functions
-const isRunning = (query: any) => {
-  return new Promise((resolve, reject) => {
-    if (!query) {
-      reject(new Error('No query provided'));
-    }
-
-    exec(`tasklist`, (err, stdout, stderr) => {
-      resolve(stdout.toLowerCase().indexOf(query.toLowerCase()) > -1);
-      console.log(err);
-      console.log(stderr);
-    });
+function sleep(ms:number) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
   });
-};
+}
 
 // 0) For run-config.
 ipcMain.handle('run-config', async (event, ...args) => {
@@ -158,41 +151,62 @@ ipcMain.handle('run-config', async (event, ...args) => {
   });
 });
 
-// 1) For run-server-sim
-ipcMain.handle('run-server-sim', async(event, ...args) => {
+// 1) Run software in sim.
+ipcMain.handle('run-sw-sim', async (event) => {
+    const server_ready_path = join(__dirname, "..", "server_ready.txt");
     const serverPath = "c:/Users/nathan_pulsemedica/AppData/Local/PulseMedica/FIH/1.0.0.779/server/PMServer.exe"
+    const uiPath = "C:/Users/nathan_pulsemedica/AppData/Local/PulseMedica/FIH/1.0.0.779/client/FSS UI.exe"
+
+    // 1) Remove any old server_ready.txt
+    if (fs.existsSync(server_ready_path)){
+        console.log("A server ready file already exists, removing it now.")
+        fs.unlinkSync(server_ready_path);
+    }
+
+    // 2) Run the server
     const child = exec(serverPath + ' sim');
 
-    // Send stdout / stderr data back to the renderer process through a channel - that the renderer then listens on.
-    // I guess you could just send it all back as 1 object - this way just shows the messages "live".
+    // 3) Send stdout / stderr data back to the renderer process through dedicated channels.
+    // These listeners will continue to send data as long as the child process runs.
     child.stdout?.on('data', data => {
-      console.log(`stdout: ${data}`);
-      event.sender.send('server-sim-stdout', data.toString());
+        console.log(`stdout: ${data}`);
+        event.sender.send('server-sim-stdout', data.toString());
     });
 
     child.stderr?.on('data', data => {
-      console.error(`stderr: ${data}`);
-      // Send stderr data back to the renderer process through a channel.
-      event.sender.send('server-sim-stderr', data.toString());
+        console.error(`stderr: ${data}`);
+        event.sender.send('server-sim-stderr', data.toString());
     });
 
     child.on('close', code => {
-      console.log(`Server process exited with code ${code}`);
-      // Send close code back to the renderer process through a channel.
-      event.sender.send('server-sim-close', code);
+        console.log(`Server process exited with code ${code}`);
+        event.sender.send('server-sim-close', code);
     });
-})
 
-// 2) Check if server is running. I took this from femtoUI.
-ipcMain.handle('is-server-live', async () => {
-  isRunning("PMServer.exe")
-    .then(result => {
-      const isRunning = result as boolean;
-      if (isRunning){
-        return true;
-      }
-      else {
-        return false;
-      }
-    })
-})
+    // 4) Monitor for server_ready.txt. Must be done this way to ensure main process isn't interrupted.
+    const timeout = 30; // seconds
+    let timer = 0;
+    const interval = setInterval(() => {
+        if (fs.existsSync(server_ready_path)) {
+            clearInterval(interval);
+
+             // 5) Open the UI
+            event.sender.send('server-sim-ready', true);
+            console.log("Server is ready, opening UI...")
+            exec(`"${uiPath}"`); // Must be quoted to handle spaces.
+        }
+
+        timer++;
+        if (timer > timeout) {
+            clearInterval(interval);
+            console.error("Timeout: server_ready.txt not found.");
+            // Send a specific event for timeout
+            event.sender.send('server-sim-ready', false);
+            // Optionally, kill the child process if it timed out
+            child.kill();
+        }
+    }, 1000); // Check every second
+
+    // Return from handle. This is the object hat result = ipcRenderer.invoke() gets.
+    return { success: true, message: 'Server process initiated successfully & UI opened.' };
+});
