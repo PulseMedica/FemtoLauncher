@@ -5,7 +5,8 @@ import path from 'node:path'
 import { join } from 'path';
 import { exec, spawn } from "node:child_process";
 import { config } from 'node:process';
-import fs from "fs"
+import fs from "fs";
+import psList from 'ps-list';
 
 const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -311,4 +312,10 @@ ipcMain.handle('close-software', async (event, processName) => {
   result.uiResponse = "[Success] FSS UI.exe was closed successfully.";
 
   return result;
+});
+
+// 4) Polls to see if pmserver is running. Note that anything prefixed with "poll-" is a polling function.
+ipcMain.handle('poll-pmserver', async () => {
+    const processes = await psList();
+    return processes.some(p => p.name === 'PMServer.exe');
 });

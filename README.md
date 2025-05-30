@@ -1,22 +1,23 @@
 # FemtoLauncher
 Exploratory repository to develop a launcher application to launch the FIH software.
 
-# Checklist
-[X] Base UI
-[X] Be able to run a script and read its stdout.
-[X] Be able to run Config.exe
-[X] Be able to run PMServer.exe and read its stdout, display to user.
-[X] Change launch software button to BOTH start PMserver.exe and FSS UI.exe. PMServer will create a "serverReady.txt" file which you wait for and once it's there you open UI.
-    - look at start.ps1 for example.
-[X] Checkbox to pick between SIM or TARGET.
-[X] Fix bug where starting the app twice clears the UI?
-[X] Have a "kill app" button which closes both server and UI.
-[ ] "Edit config" functionality?
+# Features
+[X] Run Config.
+[X] Launch software from launcher.
+[X] Display terminal outputs to the user.
+[ ] Indicator lights for process running -> PMServer, UI, MLServer
+[ ] Config Editor
+[ ] List of "interfering applications". Indicate a warning to the user if they're running (optotune cockpit, amplitude sw, etc.)
+[X] Explicit "kill software" button.
+    - Currently this will look for and kill any UI and Server processes (takes around 5 seconds).
+[ ] Have the launcher show changlogs. FemtoDeploy would have to download the changelog information and include it in the repo.
 
-[ ] Need a good way to communicate the state of everything to the user.
-    - State of script(s) running.
-    - State of server?
-    - etc / whatever else might be useful.
+# Updating FemtoDeploy
+[ ] Include a launcher version as it does server and UI then download it.
+[ ]  Remove start.ps1 script, and point the NSIS installer / entrypoint to the installer.
+    - Would also modify NSIS since there would no longer by target vs. simulation (handled by launcher).
 
-
-[ ] (eventually) Test edge case scenarios and see if am properly sending the right console messages.
+# Quality
+[ ] Units tests.
+[ ] Test edge case scenarios and see if am properly sending the right console messages.
+[ ] Probably want to move things out of app.tsx. The launcher is just 1 page, but probably need to start splitting up the main file so its not huge.
