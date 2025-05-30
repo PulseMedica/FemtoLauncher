@@ -4,6 +4,7 @@ import logo from "../assets/logo.png"
 
 // MODULES
 import Services from './Services';
+import { config } from 'node:process';
 
 function App() {
   const [outputLines, setOutputLines] = useState<string[]>([]);;
@@ -11,21 +12,29 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [serverPath, setServerPath] = useState("");
   const [clientPath, setClientPath] = useState("");
+  const [configPath, setConfigPath] = useState("");
   const outputContainerRef = useRef<HTMLDivElement | null>(null);
 
   // Get paths to server / client.
   useEffect(() => {
+    let alreadySet = false; // To handle mount useEffects not re-running twice.
     setOutputLines([]);
     async function getPaths() {
+      // Honestly you can remove these next 2 lines if you want, the useEFfect() will just run twice due to react strict mode in development environment.
+      if (alreadySet) return;
+      alreadySet = true;
       const result = await window.ipcRenderer.invoke("get-paths");
       setServerPath(result.serverPath);
       setClientPath(result.clientPath);
+      setConfigPath(result.configPath)
       setOutputLines(prev => [
         ...prev,
         "Server Artifact:",
         result.serverPath,
         "Client Artifact:",
-        result.clientPath
+        result.clientPath,
+        "Config Artifact:",
+        result.configPath,
       ]);
     }
     getPaths();
@@ -35,7 +44,7 @@ function App() {
   const handleRunConfigClick = async() => {
     setOutputLines([])
     setLoading(true);
-    const resultObject = await window.ipcRenderer.invoke('run-config');
+    const resultObject = await window.ipcRenderer.invoke('run-config', configPath);
     const results = resultObject.outputLines;
     setLoading(false);
     setOutputLines(results);

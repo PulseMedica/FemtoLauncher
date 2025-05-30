@@ -93,16 +93,14 @@ ipcMain.handle('get-paths', async(event, ...args) => {
 })
 
 // 0) For run-config.
-ipcMain.handle('run-config', async (event, ...args) => {
+ipcMain.handle('run-config', async (event, configPath) => {
   console.log("------- run-config has been called -------");
-  const config_exe_path = join(__dirname, "..", "electron/main/scripts/config.exe -d");
-
   return new Promise((resolve, reject) => {
     let combinedOutputLines: string[] = [];
     let stdoutData = '';
     let stderrData = '';
 
-    const child = exec(config_exe_path);
+    const child = exec(configPath + " -d");
 
     child.stdout?.on('data', data => {
       const chunk = data.toString();

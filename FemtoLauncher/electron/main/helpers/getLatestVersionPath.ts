@@ -52,6 +52,7 @@ function getLatestVersionPath(){
         latestVersionPath: "",
         serverPath: "",
         clientPath: "",
+        configPath: "",
     }
     const basePath = path.join(os.homedir(), 'AppData', 'Local', 'PulseMedica', 'FIH');
     const latestVersion = getHighestVersionFolder(basePath);
@@ -60,9 +61,11 @@ function getLatestVersionPath(){
         const latestVersionPath = path.join(basePath, latestVersion);
         const serverPath = path.join(latestVersionPath, "server", "PMServer.exe")
         const clientPath = path.join(latestVersionPath, "client", "FSS UI.exe")
+        const configPath = path.join(latestVersionPath, "server", "config.exe")
         result.latestVersionPath = latestVersionPath;
         result.serverPath = serverPath;
         result.clientPath = clientPath;
+        result.configPath = configPath;
         console.log(result);
         return result;
     }
@@ -70,6 +73,7 @@ function getLatestVersionPath(){
         result.latestVersionPath = "[Error] Unable to find latest version path."
         result.serverPath = "[Error] Unable to find latest server path."
         result.clientPath = "[Error] Unable to find latest client path."
+        result.configPath = "[Error] Unable to find config path."
         return result;
     }
 }

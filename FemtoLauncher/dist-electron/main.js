@@ -137,7 +137,8 @@ function getLatestVersionPath() {
   const result = {
     latestVersionPath: "",
     serverPath: "",
-    clientPath: ""
+    clientPath: "",
+    configPath: ""
   };
   const basePath = path.join(os.homedir(), "AppData", "Local", "PulseMedica", "FIH");
   const latestVersion = getHighestVersionFolder(basePath);
@@ -145,15 +146,18 @@ function getLatestVersionPath() {
     const latestVersionPath = path.join(basePath, latestVersion);
     const serverPath = path.join(latestVersionPath, "server", "PMServer.exe");
     const clientPath = path.join(latestVersionPath, "client", "FSS UI.exe");
+    const configPath = path.join(latestVersionPath, "server", "config.exe");
     result.latestVersionPath = latestVersionPath;
     result.serverPath = serverPath;
     result.clientPath = clientPath;
+    result.configPath = configPath;
     console.log(result);
     return result;
   } else {
     result.latestVersionPath = "[Error] Unable to find latest version path.";
     result.serverPath = "[Error] Unable to find latest server path.";
     result.clientPath = "[Error] Unable to find latest client path.";
+    result.configPath = "[Error] Unable to find config path.";
     return result;
   }
 }
@@ -202,15 +206,14 @@ ipcMain.handle("get-paths", async (event, ...args) => {
   const result = getLatestVersionPath();
   return result;
 });
-ipcMain.handle("run-config", async (event, ...args) => {
+ipcMain.handle("run-config", async (event, configPath) => {
   console.log("------- run-config has been called -------");
-  const config_exe_path = join(__dirname, "..", "electron/main/scripts/config.exe -d");
   return new Promise((resolve, reject) => {
     var _a, _b;
     let combinedOutputLines = [];
     let stdoutData = "";
     let stderrData = "";
-    const child = exec(config_exe_path);
+    const child = exec(configPath + " -d");
     (_a = child.stdout) == null ? void 0 : _a.on("data", (data) => {
       const chunk = data.toString();
       stdoutData += chunk;

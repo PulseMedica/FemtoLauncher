@@ -18,6 +18,7 @@ Exploratory repository to develop a launcher application to launch the FIH softw
     - Would also modify NSIS since there would no longer by target vs. simulation (handled by launcher).
 
 # Quality
+[ ] Launch software should only be enabled if all server client artifacts have been found.
 [ ] Units tests.
 [ ] Test edge case scenarios and see if am properly sending the right console messages.
 [ ] Probably want to move things out of app.tsx. The launcher is just 1 page, but probably need to start splitting up the main file so its not huge.
