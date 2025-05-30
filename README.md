@@ -5,7 +5,7 @@ Exploratory repository to develop a launcher application to launch the FIH softw
 [X] Run Config.
 [X] Launch software from launcher.
 [X] Display terminal outputs to the user.
-[ ] Indicator lights for process running -> PMServer, UI, MLServer
+[X] Indicator lights for process running -> PMServer, UI, MLServer
 [ ] Config Editor
 [ ] List of "interfering applications". Indicate a warning to the user if they're running (optotune cockpit, amplitude sw, etc.)
 [X] Explicit "kill software" button.
@@ -21,3 +21,6 @@ Exploratory repository to develop a launcher application to launch the FIH softw
 [ ] Units tests.
 [ ] Test edge case scenarios and see if am properly sending the right console messages.
 [ ] Probably want to move things out of app.tsx. The launcher is just 1 page, but probably need to start splitting up the main file so its not huge.
+
+# Known Issues
+[ ] Close software takes too long - should probably show a "loading" or something. And bring the output container to the bottom so user can see, OR clear it.
