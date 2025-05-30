@@ -1,0 +1,31 @@
+.services-container{
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+    width: 100%;
+    background: linear-gradient(180deg, #212326 5.8%, #444C55 94.2%);
+    padding: 16px;
+    border-radius: 12px;
+}
+
+.service-item{
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+}
+
+.service-live{
+    border-radius: 50%;
+    height: 30px;
+    width: 30px;
+    background-color: rgb(157, 253, 157);
+}
+
+.service-dead{
+    border-radius: 50%;
+    height: 30px;
+    width: 30px;
+    background-color: rgb(255, 155, 155);
+}

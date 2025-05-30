@@ -1,8 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
-import reactLogo from '../assets/react.svg'
-import viteLogo from '/electron-vite.animate.svg'
 import '../Styles/App.css'
 import logo from "../assets/logo.png"
+import Services from './Services';
 
 function App() {
   const [outputLines, setOutputLines] = useState<string[]>([]);;
@@ -84,6 +83,7 @@ function App() {
       </div>
       <div className="modal-container">
           <div className="title">Welcome to FIH Launcher</div>
+          {<Services></Services>}
           <div className="inputs-container">
             <div className="mode-selector-container">
                 <div className="radio-container">

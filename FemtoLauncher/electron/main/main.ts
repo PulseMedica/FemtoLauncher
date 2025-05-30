@@ -315,7 +315,7 @@ ipcMain.handle('close-software', async (event, processName) => {
 });
 
 // 4) Polls to see if pmserver is running. Note that anything prefixed with "poll-" is a polling function.
-ipcMain.handle('poll-pmserver', async () => {
+ipcMain.handle('poll-service', async (event, service) => {
     const processes = await psList();
-    return processes.some(p => p.name === 'PMServer.exe');
+    return processes.some(p => p.name === service);
 });

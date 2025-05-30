@@ -312,9 +312,9 @@ ipcMain.handle("close-software", async (event, processName) => {
   result.uiResponse = "[Success] FSS UI.exe was closed successfully.";
   return result;
 });
-ipcMain.handle("poll-pmserver", async () => {
+ipcMain.handle("poll-service", async (event, service) => {
   const processes = await psList();
-  return processes.some((p) => p.name === "PMServer.exe");
+  return processes.some((p) => p.name === service);
 });
 export {
   MAIN_DIST,
