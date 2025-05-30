@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import '../Styles/App.css'
 import logo from "../assets/logo.png"
 import Services from './Services';
@@ -7,6 +7,7 @@ function App() {
   const [outputLines, setOutputLines] = useState<string[]>([]);;
   const [mode, setMode] = useState('sim');
   const [loading, setLoading] = useState(false);
+  const outputContainerRef = useRef<HTMLDivElement | null>(null);
 
   // Runs config.
   const handleRunConfigClick = async() => {
@@ -63,6 +64,12 @@ function App() {
     };
   }, [handleServerStdout, handleServerStderr, handleServerClose]); // Rerun if these functions change.
 
+  useEffect(() => { // Listens for changes to outputContainer. If so, will automatically scroll to the bottom of it to show.
+    if (outputContainerRef.current) {
+      outputContainerRef.current.scrollTop = outputContainerRef.current.scrollHeight;
+    }
+  }, [outputLines])
+
   const handleRunSoftware = async(mode:string) => {
     setOutputLines([])
     setLoading(true);
@@ -116,7 +123,7 @@ function App() {
               Close Software
             </button>
 
-            <div className="output-container">
+            <div className="output-container" ref={outputContainerRef}>
                 {loading ? ( /* If the script is still loading */
                     <div id="loading-icon"></div>
                 ) : (
