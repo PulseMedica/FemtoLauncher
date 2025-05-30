@@ -74,9 +74,11 @@ function App() {
     setOutputLines([])
     setLoading(true);
     if (mode === "sim" ){
+      setOutputLines((prevLines => [...prevLines, "---- Running Server in Simulation ----\n"]));
       const result = await window.ipcRenderer.invoke('run-sw-sim');
     }
     else if (mode === "target") {
+      setOutputLines((prevLines => [...prevLines, "---- Running Server in Target ----\n"]));
       const result = await window.ipcRenderer.invoke("run-sw-target")
     }
     setLoading(false);
@@ -101,12 +103,12 @@ function App() {
           <div className="inputs-container">
             <div className="mode-selector-container">
                 <div className="radio-container">
-                  <input type="radio" name="target" value="target" checked={mode === "target"} onClick={handleModeSelect}/>
+                  <input id="target" type="radio" name="target" value="target" checked={mode === "target"} onChange={handleModeSelect}/>
                   <label htmlFor="target">Target</label>
                 </div>
 
                 <div className="radio-container">
-                  <input type="radio" name="sim" value="sim" checked={mode === "sim"} onClick={handleModeSelect}/>
+                  <input id="sim" type="radio" name="sim" value="sim" checked={mode === "sim"} onChange={handleModeSelect}/>
                   <label htmlFor="sim">Simulation</label>
                 </div>
             </div>
