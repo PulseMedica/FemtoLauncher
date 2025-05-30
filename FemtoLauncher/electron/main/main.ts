@@ -85,7 +85,7 @@ function sleep(ms:number) {
 // 0) For run-config.
 ipcMain.handle('run-config', async (event, ...args) => {
   console.log("------- run-config has been called -------");
-  const config_exe_path = join(__dirname, "..", "electron/main/scripts/config.exe");
+  const config_exe_path = join(__dirname, "..", "electron/main/scripts/config.exe -d");
 
   return new Promise((resolve, reject) => {
     let combinedOutputLines: string[] = [];

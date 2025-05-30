@@ -6,12 +6,15 @@ import Services from './Services';
 function App() {
   const [outputLines, setOutputLines] = useState<string[]>([]);;
   const [mode, setMode] = useState('sim');
+  const [loading, setLoading] = useState(false);
 
   // Runs config.
   const handleRunConfigClick = async() => {
     setOutputLines([])
+    setLoading(true);
     const resultObject = await window.ipcRenderer.invoke('run-config');
     const results = resultObject.outputLines;
+    setLoading(false);
     setOutputLines(results);
   }
 
@@ -62,16 +65,20 @@ function App() {
 
   const handleRunSoftware = async(mode:string) => {
     setOutputLines([])
+    setLoading(true);
     if (mode === "sim" ){
       const result = await window.ipcRenderer.invoke('run-sw-sim');
     }
     else if (mode === "target") {
       const result = await window.ipcRenderer.invoke("run-sw-target")
     }
+    setLoading(false);
   }
 
   const handleCloseSoftware = async() => {
+    setLoading(true);
     const result = await window.ipcRenderer.invoke("close-software")
+    setLoading(false);
     setOutputLines(prevLines => [...prevLines, result.serverResponse])
     setOutputLines(prevLines => [...prevLines, result.uiResponse])
   }
@@ -97,21 +104,21 @@ function App() {
                 </div>
             </div>
 
-            <button id="btn-run-config" onClick={handleRunConfigClick}>
+            <button id="btn-run-config" onClick={handleRunConfigClick} disabled={loading}>
               Run Config
             </button>
 
-            <button id="btn-launch-sw" onClick={() => handleRunSoftware(mode)}> {/* Starts both the server and UI in one go. */}
+            <button id="btn-launch-sw" onClick={() => handleRunSoftware(mode)} disabled={loading}> {/* Starts both the server and UI in one go. */}
               Launch Software
             </button>
 
-            <button id="btn-close-sw" onClick={handleCloseSoftware}>
+            <button id="btn-close-sw" onClick={handleCloseSoftware} disabled={loading}>
               Close Software
             </button>
 
             <div className="output-container">
-                {!outputLines ? ( /* If the script is still loading */
-                    <div>Loading...</div>
+                {loading ? ( /* If the script is still loading */
+                    <div id="loading-icon"></div>
                 ) : (
                     outputLines.map((line, index) => (
                         <div key={index} className={`${getLineClass(line)}`}>

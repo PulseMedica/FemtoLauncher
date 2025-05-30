@@ -7,6 +7,7 @@
 }
 
 body {
+  font-family: "Roboto Mono", Inter;
   margin: 0;
   display: flex;
   align-items: center;
