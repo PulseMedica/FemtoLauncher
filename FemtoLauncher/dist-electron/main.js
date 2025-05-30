@@ -7,6 +7,7 @@ import childProcess, { exec } from "node:child_process";
 import fs from "fs";
 import process$1 from "node:process";
 import { promisify } from "node:util";
+import os from "os";
 const __dirname$1 = path.dirname(fileURLToPath(import.meta.url));
 const TEN_MEGABYTES = 1e3 * 1e3 * 10;
 const execFile = promisify(childProcess.execFile);
@@ -102,6 +103,60 @@ const nonWindows = async (options = {}) => {
   }
 };
 const psList = process$1.platform === "win32" ? windows : nonWindows;
+function parseVersion(versionStr) {
+  return versionStr.split(".").map((num) => parseInt(num, 10));
+}
+function compareVersions(v1, v2) {
+  for (let i = 0; i < Math.max(v1.length, v2.length); i++) {
+    const num1 = v1[i] || 0;
+    const num2 = v2[i] || 0;
+    if (num1 > num2) return 1;
+    if (num1 < num2) return -1;
+  }
+  return 0;
+}
+function getHighestVersionFolder(dirPath) {
+  try {
+    const items = fs.readdirSync(dirPath, { withFileTypes: true });
+    const versionFolders = items.filter((item) => item.isDirectory() && /^\d+(\.\d+)*$/.test(item.name)).map((item) => item.name);
+    if (versionFolders.length === 0) {
+      return null;
+    }
+    versionFolders.sort((a, b) => {
+      const vA = parseVersion(a);
+      const vB = parseVersion(b);
+      return compareVersions(vB, vA);
+    });
+    return versionFolders[0];
+  } catch (err) {
+    console.error("Error reading directory:", err);
+    return null;
+  }
+}
+function getLatestVersionPath() {
+  const result = {
+    latestVersionPath: "",
+    serverPath: "",
+    clientPath: ""
+  };
+  const basePath = path.join(os.homedir(), "AppData", "Local", "PulseMedica", "FIH");
+  const latestVersion = getHighestVersionFolder(basePath);
+  if (latestVersion !== null) {
+    const latestVersionPath = path.join(basePath, latestVersion);
+    const serverPath = path.join(latestVersionPath, "server", "PMServer.exe");
+    const clientPath = path.join(latestVersionPath, "client", "FSS UI.exe");
+    result.latestVersionPath = latestVersionPath;
+    result.serverPath = serverPath;
+    result.clientPath = clientPath;
+    console.log(result);
+    return result;
+  } else {
+    result.latestVersionPath = "[Error] Unable to find latest version path.";
+    result.serverPath = "[Error] Unable to find latest server path.";
+    result.clientPath = "[Error] Unable to find latest client path.";
+    return result;
+  }
+}
 createRequire(import.meta.url);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 process.env.APP_ROOT = path.join(__dirname, "..");
@@ -143,6 +198,10 @@ app.whenReady().then(
     createWindow();
   }
 );
+ipcMain.handle("get-paths", async (event, ...args) => {
+  const result = getLatestVersionPath();
+  return result;
+});
 ipcMain.handle("run-config", async (event, ...args) => {
   console.log("------- run-config has been called -------");
   const config_exe_path = join(__dirname, "..", "electron/main/scripts/config.exe -d");
@@ -197,12 +256,10 @@ ipcMain.handle("run-config", async (event, ...args) => {
     });
   });
 });
-ipcMain.handle("run-sw-sim", async (event) => {
+ipcMain.handle("run-sw-sim", async (event, serverPath, clientPath) => {
   var _a, _b;
-  console.log("--------- Running software in simulation ---------");
+  console.log("--------- Running software in simulation ---------\n");
   const server_ready_path = join(__dirname, "..", "server_ready.txt");
-  const serverPath = "c:/Users/nathan_pulsemedica/AppData/Local/PulseMedica/FIH/1.0.0.779/server/PMServer.exe";
-  const uiPath = "C:/Users/nathan_pulsemedica/AppData/Local/PulseMedica/FIH/1.0.0.779/client/FSS UI.exe";
   if (fs.existsSync(server_ready_path)) {
     console.log("A server ready file already exists, removing it now.");
     fs.unlinkSync(server_ready_path);
@@ -227,7 +284,7 @@ ipcMain.handle("run-sw-sim", async (event) => {
       clearInterval(interval);
       event.sender.send("server-sim-ready", true);
       console.log("Server is ready, opening UI...");
-      exec(`"${uiPath}"`);
+      exec(`"${clientPath}"`);
     }
     timer++;
     if (timer > timeout) {
@@ -239,12 +296,10 @@ ipcMain.handle("run-sw-sim", async (event) => {
   }, 1e3);
   return { success: true, message: "Server process initiated successfully & UI opened." };
 });
-ipcMain.handle("run-sw-target", async (event) => {
+ipcMain.handle("run-sw-target", async (event, serverPath, clientPath) => {
   var _a, _b;
-  console.log("--------- Running server in target ---------");
+  console.log("--------- Running server in target ---------\n");
   const server_ready_path = join(__dirname, "..", "server_ready.txt");
-  const serverPath = "c:/Users/nathan_pulsemedica/AppData/Local/PulseMedica/FIH/1.0.0.779/server/PMServer.exe";
-  const uiPath = "C:/Users/nathan_pulsemedica/AppData/Local/PulseMedica/FIH/1.0.0.779/client/FSS UI.exe";
   if (fs.existsSync(server_ready_path)) {
     console.log("A server ready file already exists, removing it now.");
     fs.unlinkSync(server_ready_path);
@@ -269,7 +324,7 @@ ipcMain.handle("run-sw-target", async (event) => {
       clearInterval(interval);
       event.sender.send("server-ready", true);
       console.log("Server is ready, opening UI...");
-      exec(`"${uiPath}"`);
+      exec(`"${clientPath}"`);
     }
     timer++;
     if (timer > timeout) {

@@ -24,3 +24,4 @@ Exploratory repository to develop a launcher application to launch the FIH softw
 
 # Known Issues
 [X] Close software takes too long - should probably show a "loading" or something. And bring the output container to the bottom so user can see, OR clear it.
+[ ] Log messages in output-container are outputting the same message twice.

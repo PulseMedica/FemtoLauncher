@@ -8,6 +8,9 @@ import { config } from 'node:process';
 import fs from "fs";
 import psList from 'ps-list';
 
+// MODULES
+import getLatestVersionPath from './helpers/getLatestVersionPath.ts'
+
 const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -83,6 +86,12 @@ function sleep(ms:number) {
   });
 }
 
+// 0) On startup, we run this function from the renderer that gets all the paths.
+ipcMain.handle('get-paths', async(event, ...args) => {
+  const result = getLatestVersionPath();
+  return result;
+})
+
 // 0) For run-config.
 ipcMain.handle('run-config', async (event, ...args) => {
   console.log("------- run-config has been called -------");
@@ -154,11 +163,9 @@ ipcMain.handle('run-config', async (event, ...args) => {
 });
 
 // 1) Run software in sim.
-ipcMain.handle('run-sw-sim', async (event) => {
-    console.log("--------- Running software in simulation ---------")
+ipcMain.handle('run-sw-sim', async (event, serverPath, clientPath) => {
+    console.log("--------- Running software in simulation ---------\n")
     const server_ready_path = join(__dirname, "..", "server_ready.txt");
-    const serverPath = "c:/Users/nathan_pulsemedica/AppData/Local/PulseMedica/FIH/1.0.0.779/server/PMServer.exe"
-    const uiPath = "C:/Users/nathan_pulsemedica/AppData/Local/PulseMedica/FIH/1.0.0.779/client/FSS UI.exe"
 
     // 1) Remove any old server_ready.txt
     if (fs.existsSync(server_ready_path)){
@@ -196,7 +203,7 @@ ipcMain.handle('run-sw-sim', async (event) => {
              // 5) Open the UI
             event.sender.send('server-sim-ready', true);
             console.log("Server is ready, opening UI...")
-            exec(`"${uiPath}"`); // Must be quoted to handle spaces.
+            exec(`"${clientPath}"`); // Must be quoted to handle spaces.
         }
 
         timer++;
@@ -215,11 +222,9 @@ ipcMain.handle('run-sw-sim', async (event) => {
 });
 
 // 2) Run software in target.
-ipcMain.handle('run-sw-target', async (event) => {
-    console.log("--------- Running server in target ---------")
+ipcMain.handle('run-sw-target', async (event, serverPath, clientPath) => {
+    console.log("--------- Running server in target ---------\n")
     const server_ready_path = join(__dirname, "..", "server_ready.txt");
-    const serverPath = "c:/Users/nathan_pulsemedica/AppData/Local/PulseMedica/FIH/1.0.0.779/server/PMServer.exe"
-    const uiPath = "C:/Users/nathan_pulsemedica/AppData/Local/PulseMedica/FIH/1.0.0.779/client/FSS UI.exe"
 
     // 1) Remove any old server_ready.txt
     if (fs.existsSync(server_ready_path)){
@@ -257,7 +262,7 @@ ipcMain.handle('run-sw-target', async (event) => {
              // 5) Open the UI
             event.sender.send('server-ready', true);
             console.log("Server is ready, opening UI...")
-            exec(`"${uiPath}"`); // Must be quoted to handle spaces.
+            exec(`"${clientPath}"`); // Must be quoted to handle spaces.
         }
 
         timer++;

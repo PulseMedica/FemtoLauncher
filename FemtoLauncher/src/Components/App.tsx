@@ -1,13 +1,35 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import '../Styles/App.css'
 import logo from "../assets/logo.png"
+
+// MODULES
 import Services from './Services';
 
 function App() {
   const [outputLines, setOutputLines] = useState<string[]>([]);;
   const [mode, setMode] = useState('sim');
   const [loading, setLoading] = useState(false);
+  const [serverPath, setServerPath] = useState("");
+  const [clientPath, setClientPath] = useState("");
   const outputContainerRef = useRef<HTMLDivElement | null>(null);
+
+  // Get paths to server / client.
+  useEffect(() => {
+    setOutputLines([]);
+    async function getPaths() {
+      const result = await window.ipcRenderer.invoke("get-paths");
+      setServerPath(result.serverPath);
+      setClientPath(result.clientPath);
+      setOutputLines(prev => [
+        ...prev,
+        "Server Artifact:",
+        result.serverPath,
+        "Client Artifact:",
+        result.clientPath
+      ]);
+    }
+    getPaths();
+  }, []);
 
   // Runs config.
   const handleRunConfigClick = async() => {
@@ -75,11 +97,11 @@ function App() {
     setLoading(true);
     if (mode === "sim" ){
       setOutputLines((prevLines => [...prevLines, "---- Running Server in Simulation ----\n"]));
-      const result = await window.ipcRenderer.invoke('run-sw-sim');
+      const result = await window.ipcRenderer.invoke('run-sw-sim', serverPath, clientPath);
     }
     else if (mode === "target") {
       setOutputLines((prevLines => [...prevLines, "---- Running Server in Target ----\n"]));
-      const result = await window.ipcRenderer.invoke("run-sw-target")
+      const result = await window.ipcRenderer.invoke("run-sw-target", serverPath, clientPath)
     }
     setLoading(false);
   }
