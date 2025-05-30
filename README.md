@@ -23,4 +23,4 @@ Exploratory repository to develop a launcher application to launch the FIH softw
 [ ] Probably want to move things out of app.tsx. The launcher is just 1 page, but probably need to start splitting up the main file so its not huge.
 
 # Known Issues
-[ ] Close software takes too long - should probably show a "loading" or something. And bring the output container to the bottom so user can see, OR clear it.
+[X] Close software takes too long - should probably show a "loading" or something. And bring the output container to the bottom so user can see, OR clear it.
