@@ -148,7 +148,7 @@ function App() {
               Run Config
             </button>
 
-            <button id="btn-launch-sw" onClick={() => handleRunSoftware(mode)} disabled={loading}> {/* Starts both the server and UI in one go. */}
+            <button id="btn-launch-sw" onClick={() => handleRunSoftware(mode)} disabled={loading || serverPath.startsWith('[Error]') || clientPath.startsWith('[Error')}> {/* Starts both the server and UI in one go. */}
               Launch Software
             </button>
 
