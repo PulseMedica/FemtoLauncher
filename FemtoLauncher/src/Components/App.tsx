@@ -206,7 +206,7 @@ function App() {
             </div>
 
             {/* This cover makes the rest of the screen gray out and non-clickable. */}
-            <div className='open-modal-cover'>
+            <div className='open-modal-cover' onClick={() => setIsEditConfigOpen(false)}>
 
             </div>
           </>
