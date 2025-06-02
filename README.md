@@ -1,29 +1,34 @@
 # FemtoLauncher
+
 Exploratory repository to develop a launcher application to launch the FIH software.
 
-# Features
-[X] Run Config.
-[X] Launch software from launcher.
-[X] Display terminal outputs to the user.
-[X] Indicator lights for process running -> PMServer, UI, MLServer
-[ ] Config Editor
-[X] Indicates a warning to the user if a potentially interferring app is running (optotune cockpit, amplitude sw, etc.).
-[X] Explicit "kill software" button.
-    - Currently this will look for and kill any UI and Server processes (takes around 5 seconds).
-[ ] Have the launcher show changlogs. FemtoDeploy would have to download the changelog information and include it in the repo.
+## Features
 
-# Updating FemtoDeploy
-[ ] Include a launcher version as it does server and UI then download it.
-[ ]  Remove start.ps1 script, and point the NSIS installer / entrypoint to the installer.
-    - Would also modify NSIS since there would no longer by target vs. simulation (handled by launcher).
+- [x] Run Config.
+- [x] Launch software from launcher.
+- [x] Display terminal outputs to the user.
+- [x] Indicator lights for process running -> PMServer, UI, MLServer
+- [ ] Config Editor
+- [x] Indicates a warning to the user if a potentially interfering app is running (Optotune Cockpit, Amplitude SW, etc.).
+- [x] Explicit "kill software" button.
+  - Currently this will look for and kill any UI and Server processes (takes around 5 seconds).
+- [ ] Have the launcher show changelogs. FemtoDeploy would have to download the changelog information and include it in the repo.
 
-# Quality
-[X] Launch software should only be enabled if all server client artifacts have been found.
-[X] Display (deploy) version number on the UI.
-[ ] Units tests.
-[ ] Test edge case scenarios and see if am properly sending the right console messages.
-[ ] Probably want to move things out of app.tsx. The launcher is just 1 page, but probably need to start splitting up the main file so its not huge.
+## Updating FemtoDeploy
 
-# Known Issues
-[X] Close software takes too long - should probably show a "loading" or something. And bring the output container to the bottom so user can see, OR clear it.
-[ ] Log messages in output-container are outputting the same message twice.
+- [ ] Include a launcher version as it does server and UI, then download it.
+- [ ] Remove `start.ps1` script, and point the NSIS installer / entrypoint to the installer.
+  - Would also modify NSIS since there would no longer be target vs. simulation (handled by launcher).
+
+## Quality
+
+- [x] Launch software should only be enabled if all server/client artifacts have been found.
+- [x] Display (deploy) version number on the UI.
+- [ ] Unit tests.
+- [ ] Test edge case scenarios and ensure correct console messages.
+- [ ] Refactor: Move things out of `app.tsx` — the launcher is just one page, but the file is growing too large.
+
+## Known Issues
+
+- [x] Close software takes too long — should probably show a "loading" state or bring output container to view, OR clear it.
+- [ ] Log messages in `output-container` are outputting the same message twice. *This is because of react dev mode. Not a real bug if ran in produyction*.
