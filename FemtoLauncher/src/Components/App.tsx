@@ -196,13 +196,20 @@ function App() {
         </div>
 
         {isEditConfigOpen && (
-          <div className="edit-config-modal-container">
-            <EditConfigModal
-              isOpen={isEditConfigOpen}
-              onClose={() => setIsEditConfigOpen(false)}
-              setOutputLines={setOutputLines}
-            />
-          </div>
+          <>
+            <div className="edit-config-modal-container">
+              <EditConfigModal
+                isOpen={isEditConfigOpen}
+                onClose={() => setIsEditConfigOpen(false)}
+                setOutputLines={setOutputLines}
+              />
+            </div>
+
+            {/* This cover makes the rest of the screen gray out and non-clickable. */}
+            <div className='open-modal-cover'>
+
+            </div>
+          </>
 
         )}
 

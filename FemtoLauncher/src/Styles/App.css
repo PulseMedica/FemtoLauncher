@@ -200,6 +200,7 @@
 }
 
 .edit-config-modal-container{ /* For positioning purposes only, try not to add styles to it. */
+  z-index: 9999;
   display: flex;
   flex-direction: column;
   position: absolute;
@@ -212,4 +213,18 @@
 
 .edit-config-modal-container::-webkit-scrollbar{
   display: none;
+}
+
+.open-modal-cover{
+  position: fixed;       /* cover entire viewport */
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(41, 41, 41, 0.5); /* dim background */
+  z-index: 999;         /* very high to cover everything */
+  display: flex;         /* center modal */
+  justify-content: center;
+  align-items: center;
+  pointer-events: auto;  /* default, ensures overlay captures clicks */
 }
