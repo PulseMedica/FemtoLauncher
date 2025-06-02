@@ -3,7 +3,6 @@
     justify-content: space-evenly;
     align-items: center;
     width: 300px; /* Same width as other buttons in modal. */
-    background: linear-gradient(180deg, #212326 5.8%, #444C55 94.2%);
     padding: 16px;
     border-radius: 12px;
 }

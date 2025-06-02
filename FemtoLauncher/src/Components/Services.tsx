@@ -55,7 +55,7 @@ const Services = () => {
     return(
         <div className="services-container">
             <div className="service-item">
-                <div className="service-name">PMServer:</div>
+                <div className="service-name">Server:</div>
                 <div className={handleServiceClass(serverStatus)}></div>
             </div>
             <div className="service-item">

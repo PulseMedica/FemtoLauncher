@@ -138,18 +138,20 @@ function App() {
       </div>
       <div className="modal-container">
           <div className="title">Welcome to FIH Launcher</div>
-          {<Services></Services>}
+
           <div className="inputs-container">
             <div className="mode-selector-container">
-                <div className="radio-container">
-                  <input id="target" type="radio" name="target" value="target" checked={mode === "target"} onChange={handleModeSelect}/>
-                  <label htmlFor="target">Target</label>
+                <div className="radio-parent-container">
+                  <div className="radio-container">
+                    <input id="target" type="radio" name="target" value="target" checked={mode === "target"} onChange={handleModeSelect}/>
+                    <label htmlFor="target">Target</label>
+                  </div>
+                  <div className="radio-container">
+                    <input id="sim" type="radio" name="sim" value="sim" checked={mode === "sim"} onChange={handleModeSelect}/>
+                    <label htmlFor="sim">Simulation</label>
+                  </div>
                 </div>
-
-                <div className="radio-container">
-                  <input id="sim" type="radio" name="sim" value="sim" checked={mode === "sim"} onChange={handleModeSelect}/>
-                  <label htmlFor="sim">Simulation</label>
-                </div>
+                {<Services></Services>}
             </div>
 
             <button id="btn-run-config" onClick={handleRunConfigClick} disabled={loading}>
