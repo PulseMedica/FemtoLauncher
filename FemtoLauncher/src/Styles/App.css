@@ -210,25 +210,6 @@
   word-break: break-word; /* Handles really long horizontal strings so it doesn't extend larger than the parent. */
 }
 
-/* Scrollbar Track */
-.edit-config-modal-container::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-/* Scrollbar Thumb */
-.edit-config-modal-container::-webkit-scrollbar-thumb {
-  background: #444C55;
-  border-radius: 12px;
-}
-
-/* Scrollbar Thumb on hover */
-.edit-config-modal-container::-webkit-scrollbar-thumb:hover {
-  background: #888;
-}
-
-/* Scrollbar Track Background */
-.edit-config-modal-container::-webkit-scrollbar-track {
-  background: #BEC5CD;
-  border-radius: 12px;
+.edit-config-modal-container::-webkit-scrollbar{
+  display: none;
 }

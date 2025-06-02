@@ -183,6 +183,16 @@ async function loadConfigContent() {
     throw err;
   }
 }
+async function saveConfig(textContent) {
+  const configPath = "C:/ProgramData/Pulsemedica/FSS/config/hw_profile.json";
+  return fs$1.writeFile(configPath, textContent, "utf8").then(() => {
+    console.log("Config successfully saved to:", configPath);
+    return `[Success] Config updated and saved to: ${configPath}`;
+  }).catch((err) => {
+    console.error("Error saving config:", err);
+    return `[Error] Couldn't save config: ${err.message}`;
+  });
+}
 createRequire(import.meta.url);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 process.env.APP_ROOT = path.join(__dirname, "..");
@@ -408,6 +418,10 @@ ipcMain.handle("poll-service", async (_event, matchPattern) => {
 ipcMain.handle("read-config", async () => {
   const configContent = loadConfigContent();
   return configContent;
+});
+ipcMain.handle("save-config", async (event, textContent) => {
+  const res = await saveConfig(textContent);
+  return res;
 });
 export {
   MAIN_DIST,

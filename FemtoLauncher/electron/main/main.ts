@@ -11,6 +11,7 @@ import psList from 'ps-list';
 // MODULES
 import getLatestVersionPath from './helpers/getLatestVersionPath.ts'
 import loadConfigContent from './helpers/loadConfigContent.ts';
+import saveConfig from './helpers/saveConfig.ts';
 
 const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -341,4 +342,10 @@ ipcMain.handle('poll-service', async (_event, matchPattern: string) => {
 ipcMain.handle('read-config', async() => {
   const configContent = loadConfigContent();
   return configContent;
+})
+
+// 6) Saves what you have in the edit config editor to hw_config.exe
+ipcMain.handle('save-config', async(event, textContent) => {
+  const res = await saveConfig(textContent);
+  return res;
 })

@@ -8,6 +8,8 @@
     scrollbar-width: none;
     background-color: #BEC5CD;
     border: none;
+    padding: 16px;
+    border-radius: 16px;
 }
 
 #edit-config-textarea::-webkit-scrollbar {

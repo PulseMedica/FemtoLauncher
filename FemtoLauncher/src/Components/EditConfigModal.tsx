@@ -4,18 +4,15 @@ import "../Styles/EditConfigModal.css"
 interface EditConfigModalProps {
   isOpen: boolean;
   onClose: () => void;
+  setOutputLines: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
-const EditConfigModal: React.FC<EditConfigModalProps> = ({ isOpen, onClose }) => {
+const EditConfigModal: React.FC<EditConfigModalProps> = ({ isOpen, onClose, setOutputLines}) => {
     const [configText, setConfigText] = useState("");
-    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         // Do nothing if modal isn't open.
         if (!isOpen) return;
-
-        // Set loading states
-        setLoading(true);
 
         window.ipcRenderer.invoke("read-config")
             .then((configContent:string) => {
@@ -25,26 +22,29 @@ const EditConfigModal: React.FC<EditConfigModalProps> = ({ isOpen, onClose }) =>
             .catch((err) => {
                 setConfigText(`Error: ${err}`)
             })
-            .finally(() => {
-                setLoading(false);
-            })
 
     }, [isOpen]) // Runs when the modal's state is changed to open.
 
     const handleSave = async() => {
-        return;
+        const res = await window.ipcRenderer.invoke("save-config", configText);
+        onClose();
+        setOutputLines(prevLines => [...prevLines, res])
     }
 
     return (
         <>
-            <textarea name="" id="edit-config-textarea" defaultValue={configText}>
-            </textarea>
+            <textarea
+                name=""
+                id="edit-config-textarea"
+                value={configText}
+                onChange={e => setConfigText(e.target.value)}
+            />
 
             <button onClick={onClose} id="btn-edit-config-close">
                 Cancel
             </button>
 
-            <button id="btn-edit-config-save">
+            <button onClick={handleSave} id="btn-edit-config-save">
                 Save
             </button>
         </>

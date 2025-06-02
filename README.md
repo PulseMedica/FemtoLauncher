@@ -8,7 +8,7 @@ Exploratory repository to develop a launcher application to launch the FIH softw
 - [x] Launch software from launcher.
 - [x] Display terminal outputs to the user.
 - [x] Indicator lights for process running -> PMServer, UI, MLServer
-- [ ] Config Editor
+- [X] Simple config text editor.
 - [x] Indicates a warning to the user if a potentially interfering app is running (Optotune Cockpit, Amplitude SW, etc.).
 - [x] Explicit "kill software" button.
   - Currently this will look for and kill any UI and Server processes (takes around 5 seconds).

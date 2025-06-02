@@ -200,6 +200,7 @@ function App() {
             <EditConfigModal
               isOpen={isEditConfigOpen}
               onClose={() => setIsEditConfigOpen(false)}
+              setOutputLines={setOutputLines}
             />
           </div>
 
