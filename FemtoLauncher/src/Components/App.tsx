@@ -5,11 +5,13 @@ import logo from "../assets/logo.png"
 // MODULES
 import Services from './Services';
 import { config } from 'node:process';
+import { version } from 'node:os';
 
 function App() {
   const [outputLines, setOutputLines] = useState<string[]>([]);;
   const [mode, setMode] = useState('sim');
   const [loading, setLoading] = useState(false);
+  const [versionNumber, setVersionNumber] = useState("");
   const [serverPath, setServerPath] = useState("");
   const [clientPath, setClientPath] = useState("");
   const [configPath, setConfigPath] = useState("");
@@ -24,17 +26,20 @@ function App() {
       if (alreadySet) return;
       alreadySet = true;
       const result = await window.ipcRenderer.invoke("get-paths");
+      setVersionNumber(result.versionNumber);
       setServerPath(result.serverPath);
       setClientPath(result.clientPath);
       setConfigPath(result.configPath)
       setOutputLines(prev => [
         ...prev,
-        "Server Artifact:",
+        "Server Artifact: ",
         result.serverPath,
-        "Client Artifact:",
+        "Client Artifact: ",
         result.clientPath,
-        "Config Artifact:",
+        "Config Artifact: ",
         result.configPath,
+        "Current Version: ",
+        result.versionNumber
       ]);
     }
     getPaths();
@@ -167,6 +172,14 @@ function App() {
                     ))
                 )}
             </div>
+
+            <div className="version-container">
+              {versionNumber
+                ? "Current Version: " + versionNumber
+                : "[Error] Could not find current version!"}
+            </div>
+
+
           </div>
         </div>
     </div>

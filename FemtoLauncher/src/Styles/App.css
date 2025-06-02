@@ -44,6 +44,15 @@
   width: 300px;
 }
 
+.version-container{
+  position: absolute;
+  left: 25px;
+  bottom: 15px;
+  color: white;
+  font-size: 12px;
+
+}
+
 #btn-run-config, #btn-launch-sw, #btn-close-sw{
   border-radius: 12px;
   padding: 12px;

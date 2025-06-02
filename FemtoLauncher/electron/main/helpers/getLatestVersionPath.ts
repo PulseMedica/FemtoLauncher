@@ -3,6 +3,9 @@ import os from 'os';
 import path from 'node:path'
 import fs from "fs";
 
+// IMPORTANT NOTE:
+// Once FemtoLauncher is put into FemtoDeploy - change these paths to be from the current directory look for client and server.
+// Right now it just looks for the latest installed version, but in the future you'd point it to what version the launcher folder is in.
 
 function parseVersion(versionStr:string) {
   // Parse version string into array of numbers, e.g. "1.0.0.333" => [1, 0, 0, 333]
@@ -49,20 +52,22 @@ function getHighestVersionFolder(dirPath:string) {
 
 function getLatestVersionPath(){
     const result = {
-        latestVersionPath: "",
+        versionNumber: "",
+        versionPath: "",
         serverPath: "",
         clientPath: "",
         configPath: "",
     }
     const basePath = path.join(os.homedir(), 'AppData', 'Local', 'PulseMedica', 'FIH');
-    const latestVersion = getHighestVersionFolder(basePath);
+    const currentVersion = getHighestVersionFolder(basePath);
 
-    if (latestVersion !== null) {
-        const latestVersionPath = path.join(basePath, latestVersion);
+    if (currentVersion !== null) {
+        const latestVersionPath = path.join(basePath, currentVersion);
         const serverPath = path.join(latestVersionPath, "server", "PMServer.exe")
         const clientPath = path.join(latestVersionPath, "client", "FSS UI.exe")
         const configPath = path.join(latestVersionPath, "server", "config.exe")
-        result.latestVersionPath = latestVersionPath;
+        result.versionNumber = currentVersion;
+        result.versionPath = latestVersionPath;
         result.serverPath = serverPath;
         result.clientPath = clientPath;
         result.configPath = configPath;
@@ -70,9 +75,10 @@ function getLatestVersionPath(){
         return result;
     }
     else {
-        result.latestVersionPath = "[Error] Unable to find latest version path."
-        result.serverPath = "[Error] Unable to find latest server path."
-        result.clientPath = "[Error] Unable to find latest client path."
+        result.versionNumber = "[Error] Unable to determine current version #"
+        result.versionPath = "[Error] Unable to find current version path."
+        result.serverPath = "[Error] Unable to find server path."
+        result.clientPath = "[Error] Unable to find client path."
         result.configPath = "[Error] Unable to find config path."
         return result;
     }
