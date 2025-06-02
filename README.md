@@ -7,7 +7,7 @@ Exploratory repository to develop a launcher application to launch the FIH softw
 [X] Display terminal outputs to the user.
 [X] Indicator lights for process running -> PMServer, UI, MLServer
 [ ] Config Editor
-[ ] List of "interfering applications". Indicate a warning to the user if they're running (optotune cockpit, amplitude sw, etc.)
+[X] Indicates a warning to the user if a potentially interferring app is running (optotune cockpit, amplitude sw, etc.).
 [X] Explicit "kill software" button.
     - Currently this will look for and kill any UI and Server processes (takes around 5 seconds).
 [ ] Have the launcher show changlogs. FemtoDeploy would have to download the changelog information and include it in the repo.
@@ -18,7 +18,8 @@ Exploratory repository to develop a launcher application to launch the FIH softw
     - Would also modify NSIS since there would no longer by target vs. simulation (handled by launcher).
 
 # Quality
-[ ] Launch software should only be enabled if all server client artifacts have been found.
+[X] Launch software should only be enabled if all server client artifacts have been found.
+[X] Display (deploy) version number on the UI.
 [ ] Units tests.
 [ ] Test edge case scenarios and see if am properly sending the right console messages.
 [ ] Probably want to move things out of app.tsx. The launcher is just 1 page, but probably need to start splitting up the main file so its not huge.

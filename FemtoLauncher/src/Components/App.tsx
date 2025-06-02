@@ -4,6 +4,7 @@ import logo from "../assets/logo.png"
 
 // MODULES
 import Services from './Services';
+import WarningModal from './warningModal';
 import { config } from 'node:process';
 import { version } from 'node:os';
 
@@ -153,9 +154,12 @@ function App() {
               Run Config
             </button>
 
-            <button id="btn-launch-sw" onClick={() => handleRunSoftware(mode)} disabled={loading || serverPath.startsWith('[Error]') || clientPath.startsWith('[Error')}> {/* Starts both the server and UI in one go. */}
-              Launch Software
-            </button>
+            <div> {/* Wrapped in div to align the warning icon. */}
+              <button id="btn-launch-sw" onClick={() => handleRunSoftware(mode)} disabled={loading || serverPath.startsWith('[Error]') || clientPath.startsWith('[Error')}> {/* Starts both the server and UI in one go. */}
+                Launch Software
+              </button>
+              <WarningModal/>
+            </div>
 
             <button id="btn-close-sw" onClick={handleCloseSoftware} disabled={loading}>
               Close Software
@@ -173,15 +177,16 @@ function App() {
                 )}
             </div>
 
-            <div className="version-container">
-              {versionNumber
-                ? "Current Version: " + versionNumber
-                : "[Error] Could not find current version!"}
-            </div>
-
-
           </div>
         </div>
+
+        {/* Out of modal */}
+        <div className="version-container">
+            {versionNumber
+              ? "Current Version: " + versionNumber
+              : "[Error] Could not find current version!"}
+        </div>
+
     </div>
   )
 }

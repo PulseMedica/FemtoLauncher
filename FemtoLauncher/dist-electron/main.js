@@ -374,9 +374,17 @@ ipcMain.handle("close-software", async (event, processName) => {
   result.uiResponse = "[Success] FSS UI.exe was closed successfully.";
   return result;
 });
-ipcMain.handle("poll-service", async (event, service) => {
-  const processes = await psList();
-  return processes.some((p) => p.name === service);
+ipcMain.handle("poll-service", async (_event, matchPattern) => {
+  try {
+    const processes = await psList();
+    if (!matchPattern) return false;
+    return processes.some(
+      (proc) => proc.name.toLowerCase().includes(matchPattern.toLowerCase())
+    );
+  } catch (err) {
+    console.error("Error polling processes:", err);
+    return false;
+  }
 });
 export {
   MAIN_DIST,
