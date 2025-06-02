@@ -67,7 +67,7 @@
   transition: 0.1s;
 }
 
-#btn-run-config:not(hover), #btn-launch-sw:not(hover), #btn-close-sw:not(hover), #btn-open-config-editor:not(hover){
+#btn-run-config:not(:hover), #btn-launch-sw:not(:hover), #btn-close-sw:not(:hover), #btn-open-config-editor:not(:hover){
   transition: 0.1s;
 }
 
@@ -193,15 +193,13 @@
   white-space: pre-wrap;
 }
 
-.edit-config-modal-container{
+.edit-config-modal-container{ /* For positioning purposes only, try not to add styles to it. */
+  display: flex;
+  flex-direction: column;
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 50%;
-  border-radius: 12px;
-  height: 700px;
-  background-color: #BEC5CD;
   overflow-y: scroll;
   word-break: break-word; /* Handles really long horizontal strings so it doesn't extend larger than the parent. */
 }

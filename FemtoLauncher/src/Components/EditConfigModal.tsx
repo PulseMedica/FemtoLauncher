@@ -20,6 +20,7 @@ const EditConfigModal: React.FC<EditConfigModalProps> = ({ isOpen, onClose }) =>
         window.ipcRenderer.invoke("read-config")
             .then((configContent:string) => {
                 setConfigText(configContent)
+                console.log("Confs:", configText)
             })
             .catch((err) => {
                 setConfigText(`Error: ${err}`)
@@ -35,12 +36,19 @@ const EditConfigModal: React.FC<EditConfigModalProps> = ({ isOpen, onClose }) =>
     }
 
     return (
-        <div className="edit-config-modal">
-            {configText}
-            <button onClick={onClose}>
-                Close
+        <>
+            <textarea name="" id="edit-config-textarea" defaultValue={configText}>
+            </textarea>
+
+            <button onClick={onClose} id="btn-edit-config-close">
+                Cancel
             </button>
-        </div>
+
+            <button id="btn-edit-config-save">
+                Save
+            </button>
+        </>
+
     )
 }
 
