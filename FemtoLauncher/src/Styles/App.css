@@ -55,23 +55,27 @@
 
 }
 
-#btn-run-config, #btn-launch-sw, #btn-close-sw{
+#btn-run-config, #btn-launch-sw, #btn-close-sw, #btn-open-config-editor{
   border-radius: 12px;
   padding: 12px;
   box-shadow: rgba(6, 24, 44, 0.4) 0px 0px 0px 2px, rgba(6, 24, 44, 0.65) 0px 4px 6px -1px, rgba(255, 255, 255, 0.08) 0px 1px 0px inset;
   border: none;
 }
 
-#btn-run-config:hover, #btn-launch-sw:hover, #btn-close-sw:hover{
+#btn-run-config:hover, #btn-launch-sw:hover, #btn-close-sw:hover, #btn-open-config-editor:hover{
   scale: 1.01;
   transition: 0.1s;
 }
 
-#btn-run-config:not(hover), #btn-launch-sw:not(hover), #btn-close-sw:not(hover){
+#btn-run-config:not(hover), #btn-launch-sw:not(hover), #btn-close-sw:not(hover), #btn-open-config-editor:not(hover){
   transition: 0.1s;
 }
 
 #btn-run-config{
+  background-color: #BEC5CD;
+}
+
+#btn-open-config-editor{
   background-color: #BEC5CD;
 }
 
@@ -187,4 +191,40 @@
   color: white;
   font-size: 12px;
   white-space: pre-wrap;
+}
+
+.edit-config-modal-container{
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 50%;
+  border-radius: 12px;
+  height: 700px;
+  background-color: #BEC5CD;
+  overflow-y: scroll;
+  word-break: break-word; /* Handles really long horizontal strings so it doesn't extend larger than the parent. */
+}
+
+/* Scrollbar Track */
+.edit-config-modal-container::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+/* Scrollbar Thumb */
+.edit-config-modal-container::-webkit-scrollbar-thumb {
+  background: #444C55;
+  border-radius: 12px;
+}
+
+/* Scrollbar Thumb on hover */
+.edit-config-modal-container::-webkit-scrollbar-thumb:hover {
+  background: #888;
+}
+
+/* Scrollbar Track Background */
+.edit-config-modal-container::-webkit-scrollbar-track {
+  background: #BEC5CD;
+  border-radius: 12px;
 }

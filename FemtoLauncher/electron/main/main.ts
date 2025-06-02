@@ -10,6 +10,7 @@ import psList from 'ps-list';
 
 // MODULES
 import getLatestVersionPath from './helpers/getLatestVersionPath.ts'
+import loadConfigContent from './helpers/loadConfigContent.ts';
 
 const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -335,3 +336,9 @@ ipcMain.handle('poll-service', async (_event, matchPattern: string) => {
     return false;
   }
 });
+
+// 5) Reads config file and returns its contents.
+ipcMain.handle('read-config', async() => {
+  const configContent = loadConfigContent();
+  return configContent;
+})

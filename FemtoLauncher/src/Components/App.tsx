@@ -4,7 +4,8 @@ import logo from "../assets/logo.png"
 
 // MODULES
 import Services from './Services';
-import WarningModal from './warningModal';
+import WarningModal from './WarningModal';
+import EditConfigModal from './EditConfigModal';
 import { config } from 'node:process';
 import { version } from 'node:os';
 
@@ -12,6 +13,7 @@ function App() {
   const [outputLines, setOutputLines] = useState<string[]>([]);;
   const [mode, setMode] = useState('sim');
   const [loading, setLoading] = useState(false);
+  const [isEditConfigOpen, setIsEditConfigOpen] = useState(false);
   const [versionNumber, setVersionNumber] = useState("");
   const [serverPath, setServerPath] = useState("");
   const [clientPath, setClientPath] = useState("");
@@ -154,6 +156,10 @@ function App() {
               Run Config
             </button>
 
+            <button id="btn-open-config-editor" onClick={() => setIsEditConfigOpen(true)} disabled={loading}>
+              Edit Config
+            </button>
+
             <div> {/* Wrapped in div to align the warning icon. */}
               <button id="btn-launch-sw" onClick={() => handleRunSoftware(mode)} disabled={loading || serverPath.startsWith('[Error]') || clientPath.startsWith('[Error')}> {/* Starts both the server and UI in one go. */}
                 Launch Software
@@ -186,6 +192,16 @@ function App() {
               ? "Current Version: " + versionNumber
               : "[Error] Could not find current version!"}
         </div>
+
+        {isEditConfigOpen && (
+          <div className="edit-config-modal-container">
+            <EditConfigModal
+              isOpen={isEditConfigOpen}
+              onClose={() => setIsEditConfigOpen(false)}
+            />
+          </div>
+
+        )}
 
     </div>
   )

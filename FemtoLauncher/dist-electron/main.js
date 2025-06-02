@@ -8,6 +8,7 @@ import fs from "fs";
 import process$1 from "node:process";
 import { promisify } from "node:util";
 import os from "os";
+import fs$1 from "fs/promises";
 const __dirname$1 = path.dirname(fileURLToPath(import.meta.url));
 const TEN_MEGABYTES = 1e3 * 1e3 * 10;
 const execFile = promisify(childProcess.execFile);
@@ -162,6 +163,24 @@ function getLatestVersionPath() {
     result.clientPath = "[Error] Unable to find client path.";
     result.configPath = "[Error] Unable to find config path.";
     return result;
+  }
+}
+async function loadConfigContent() {
+  const configPath = "C:/ProgramData/Pulsemedica/FSS/config/hw_profile.json";
+  try {
+    await fs$1.access(configPath);
+    const fileContents = await fs$1.readFile(configPath, "utf-8");
+    return fileContents;
+  } catch (err) {
+    if (err instanceof Error) {
+      const defaultConfig = {
+        Message: "Config file not found, or could not be opened.",
+        Config_Path: configPath
+      };
+      const defaultContent = JSON.stringify(defaultConfig, null, 2);
+      return defaultContent;
+    }
+    throw err;
   }
 }
 createRequire(import.meta.url);
@@ -385,6 +404,10 @@ ipcMain.handle("poll-service", async (_event, matchPattern) => {
     console.error("Error polling processes:", err);
     return false;
   }
+});
+ipcMain.handle("read-config", async () => {
+  const configContent = loadConfigContent();
+  return configContent;
 });
 export {
   MAIN_DIST,
