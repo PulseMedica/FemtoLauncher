@@ -209,7 +209,7 @@ ipcMain.handle('run-sw-sim', async (event, serverPath, clientPath) => {
             clearInterval(interval);
 
              // 5) Open the UI
-            event.sender.send('server-stdout', "[Success] Server ready, starting UI now.");
+            event.sender.send('server-stdout', "\n[Success] Server ready, starting UI now.");
             console.log("Server is ready, opening UI...")
             exec(`"${clientPath}"`); // Must be quoted to handle spaces.
         }
@@ -219,7 +219,7 @@ ipcMain.handle('run-sw-sim', async (event, serverPath, clientPath) => {
             clearInterval(interval);
             console.error("Timeout: server_ready.txt not found.");
             // Send a specific event for timeout
-            event.sender.send('server-stderr', '[Error] Server Timeout. Failed to start.');
+            event.sender.send('server-stderr', '\n[Error] Server Timeout. Failed to start.');
             // Optionally, kill the child process if it timed out
             child.kill();
         }
@@ -274,7 +274,7 @@ ipcMain.handle('run-sw-target', async (event, serverPath, clientPath) => {
             clearInterval(interval);
 
              // 5) Open the UI
-            event.sender.send('server-stdout', "[Success] Server ready, starting UI now.");
+            event.sender.send('server-stdout', "\n[Success] Server ready, starting UI now.");
             console.log("Server is ready, opening UI...")
             exec(`"${clientPath}"`); // Must be quoted to handle spaces.
         }
@@ -284,7 +284,7 @@ ipcMain.handle('run-sw-target', async (event, serverPath, clientPath) => {
             clearInterval(interval);
             console.error("Timeout: server_ready.txt not found.");
             // Send a specific event for timeout
-            event.sender.send('server-stderr', '[Error] Server Timeout. Failed to start.');
+            event.sender.send('server-stderr', '\n[Error] Server Timeout. Failed to start.');
             // Optionally, kill the child process if it timed out
             child.kill();
         }
