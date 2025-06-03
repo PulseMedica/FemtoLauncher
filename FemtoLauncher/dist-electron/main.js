@@ -1,284 +1,442 @@
-import { app as y, BrowserWindow as b, ipcMain as g } from "electron";
-import { createRequire as j } from "node:module";
-import { fileURLToPath as C } from "node:url";
-import u from "node:path";
-import { join as R } from "path";
-import L, { exec as w } from "node:child_process";
-import h from "fs";
-import x from "node:process";
-import { promisify as T } from "node:util";
-import A from "os";
-import E from "fs/promises";
-const V = u.dirname(C(import.meta.url)), P = 1e3 * 1e3 * 10, S = T(L.execFile), k = async () => {
-  let e;
-  switch (x.arch) {
+import { app, BrowserWindow, ipcMain } from "electron";
+import { createRequire } from "node:module";
+import { fileURLToPath } from "node:url";
+import path from "node:path";
+import { join } from "path";
+import childProcess, { exec } from "node:child_process";
+import fs from "fs";
+import process$1 from "node:process";
+import { promisify } from "node:util";
+import os from "os";
+import fs$1 from "fs/promises";
+const __dirname$1 = path.dirname(fileURLToPath(import.meta.url));
+const TEN_MEGABYTES = 1e3 * 1e3 * 10;
+const execFile = promisify(childProcess.execFile);
+const windows = async () => {
+  let binary;
+  switch (process$1.arch) {
     case "x64":
-      e = "fastlist-0.3.0-x64.exe";
+      binary = "fastlist-0.3.0-x64.exe";
       break;
     case "ia32":
-      e = "fastlist-0.3.0-x86.exe";
+      binary = "fastlist-0.3.0-x86.exe";
       break;
     default:
-      throw new Error(`Unsupported architecture: ${x.arch}`);
+      throw new Error(`Unsupported architecture: ${process$1.arch}`);
   }
-  const t = u.join(V, "vendor", e), { stdout: s } = await S(t, {
-    maxBuffer: P,
-    windowsHide: !0
+  const binaryPath = path.join(__dirname$1, "vendor", binary);
+  const { stdout } = await execFile(binaryPath, {
+    maxBuffer: TEN_MEGABYTES,
+    windowsHide: true
   });
-  return s.trim().split(`\r
-`).map((r) => r.split("	")).map(([r, o, i]) => ({
-    pid: Number.parseInt(r, 10),
-    ppid: Number.parseInt(o, 10),
-    name: i
+  return stdout.trim().split("\r\n").map((line) => line.split("	")).map(([pid, ppid, name]) => ({
+    pid: Number.parseInt(pid, 10),
+    ppid: Number.parseInt(ppid, 10),
+    name
   }));
-}, M = async (e = {}) => {
-  const t = (e.all === !1 ? "" : "a") + "wwxo", s = {};
-  return await Promise.all(["comm", "args", "ppid", "uid", "%cpu", "%mem"].map(async (r) => {
-    const { stdout: o } = await S("ps", [t, `pid,${r}`], { maxBuffer: P });
-    for (let i of o.trim().split(`
-`).slice(1)) {
-      i = i.trim();
-      const [c] = i.split(" ", 1), d = i.slice(c.length + 1).trim();
-      s[c] === void 0 && (s[c] = {}), s[c][r] = d;
+};
+const nonWindowsMultipleCalls = async (options = {}) => {
+  const flags = (options.all === false ? "" : "a") + "wwxo";
+  const returnValue = {};
+  await Promise.all(["comm", "args", "ppid", "uid", "%cpu", "%mem"].map(async (cmd) => {
+    const { stdout } = await execFile("ps", [flags, `pid,${cmd}`], { maxBuffer: TEN_MEGABYTES });
+    for (let line of stdout.trim().split("\n").slice(1)) {
+      line = line.trim();
+      const [pid] = line.split(" ", 1);
+      const value = line.slice(pid.length + 1).trim();
+      if (returnValue[pid] === void 0) {
+        returnValue[pid] = {};
+      }
+      returnValue[pid][cmd] = value;
     }
-  })), Object.entries(s).filter(([, r]) => r.comm && r.args && r.ppid && r.uid && r["%cpu"] && r["%mem"]).map(([r, o]) => ({
-    pid: Number.parseInt(r, 10),
-    name: u.basename(o.comm),
-    cmd: o.args,
-    ppid: Number.parseInt(o.ppid, 10),
-    uid: Number.parseInt(o.uid, 10),
-    cpu: Number.parseFloat(o["%cpu"]),
-    memory: Number.parseFloat(o["%mem"])
   }));
-}, D = "ps output parsing failed", O = /^[ \t]*(?<pid>\d+)[ \t]+(?<ppid>\d+)[ \t]+(?<uid>[-\d]+)[ \t]+(?<cpu>\d+\.\d+)[ \t]+(?<memory>\d+\.\d+)[ \t]+(?<comm>.*)?/, B = async (e = {}) => {
-  const t = e.all === !1 ? "wwxo" : "awwxo", s = [
-    S("ps", [t, "pid,ppid,uid,%cpu,%mem,comm"], { maxBuffer: P }),
-    S("ps", [t, "pid,args"], { maxBuffer: P })
-  ], [r, o] = (await Promise.all(s)).map(({ stdout: a }) => a.trim().split(`
-`)), i = new Set(s.map((a) => a.child.pid));
-  r.shift(), o.shift();
-  const c = {};
-  for (const a of o) {
-    const [l, n] = a.trim().split(" ");
-    c[l] = n.join(" ");
+  return Object.entries(returnValue).filter(([, value]) => value.comm && value.args && value.ppid && value.uid && value["%cpu"] && value["%mem"]).map(([key, value]) => ({
+    pid: Number.parseInt(key, 10),
+    name: path.basename(value.comm),
+    cmd: value.args,
+    ppid: Number.parseInt(value.ppid, 10),
+    uid: Number.parseInt(value.uid, 10),
+    cpu: Number.parseFloat(value["%cpu"]),
+    memory: Number.parseFloat(value["%mem"])
+  }));
+};
+const ERROR_MESSAGE_PARSING_FAILED = "ps output parsing failed";
+const psOutputRegex = /^[ \t]*(?<pid>\d+)[ \t]+(?<ppid>\d+)[ \t]+(?<uid>[-\d]+)[ \t]+(?<cpu>\d+\.\d+)[ \t]+(?<memory>\d+\.\d+)[ \t]+(?<comm>.*)?/;
+const nonWindowsCall = async (options = {}) => {
+  const flags = options.all === false ? "wwxo" : "awwxo";
+  const psPromises = [
+    execFile("ps", [flags, "pid,ppid,uid,%cpu,%mem,comm"], { maxBuffer: TEN_MEGABYTES }),
+    execFile("ps", [flags, "pid,args"], { maxBuffer: TEN_MEGABYTES })
+  ];
+  const [psLines, psArgsLines] = (await Promise.all(psPromises)).map(({ stdout }) => stdout.trim().split("\n"));
+  const psPids = new Set(psPromises.map((promise) => promise.child.pid));
+  psLines.shift();
+  psArgsLines.shift();
+  const processCmds = {};
+  for (const line of psArgsLines) {
+    const [pid, cmds] = line.trim().split(" ");
+    processCmds[pid] = cmds.join(" ");
   }
-  return r.map((a) => {
-    const l = O.exec(a);
-    if (l === null)
-      throw new Error(D);
-    const { pid: n, ppid: m, uid: p, cpu: $, memory: N, comm: U } = l.groups;
-    return {
-      pid: Number.parseInt(n, 10),
-      ppid: Number.parseInt(m, 10),
-      uid: Number.parseInt(p, 10),
-      cpu: Number.parseFloat($),
-      memory: Number.parseFloat(N),
-      name: u.basename(U),
-      cmd: c[n]
+  const processes = psLines.map((line) => {
+    const match = psOutputRegex.exec(line);
+    if (match === null) {
+      throw new Error(ERROR_MESSAGE_PARSING_FAILED);
+    }
+    const { pid, ppid, uid, cpu, memory, comm } = match.groups;
+    const processInfo = {
+      pid: Number.parseInt(pid, 10),
+      ppid: Number.parseInt(ppid, 10),
+      uid: Number.parseInt(uid, 10),
+      cpu: Number.parseFloat(cpu),
+      memory: Number.parseFloat(memory),
+      name: path.basename(comm),
+      cmd: processCmds[pid]
     };
-  }).filter((a) => !i.has(a.pid));
-}, W = async (e = {}) => {
+    return processInfo;
+  }).filter((processInfo) => !psPids.has(processInfo.pid));
+  return processes;
+};
+const nonWindows = async (options = {}) => {
   try {
-    return await B(e);
+    return await nonWindowsCall(options);
   } catch {
-    return M(e);
+    return nonWindowsMultipleCalls(options);
   }
-}, G = x.platform === "win32" ? k : W;
-function _(e) {
-  return e.split(".").map((t) => parseInt(t, 10));
+};
+const psList = process$1.platform === "win32" ? windows : nonWindows;
+function parseVersion(versionStr) {
+  return versionStr.split(".").map((num) => parseInt(num, 10));
 }
-function H(e, t) {
-  for (let s = 0; s < Math.max(e.length, t.length); s++) {
-    const r = e[s] || 0, o = t[s] || 0;
-    if (r > o) return 1;
-    if (r < o) return -1;
+function compareVersions(v1, v2) {
+  for (let i = 0; i < Math.max(v1.length, v2.length); i++) {
+    const num1 = v1[i] || 0;
+    const num2 = v2[i] || 0;
+    if (num1 > num2) return 1;
+    if (num1 < num2) return -1;
   }
   return 0;
 }
-function q(e) {
+function getHighestVersionFolder(dirPath) {
   try {
-    const s = h.readdirSync(e, { withFileTypes: !0 }).filter((r) => r.isDirectory() && /^\d+(\.\d+)*$/.test(r.name)).map((r) => r.name);
-    return s.length === 0 ? null : (s.sort((r, o) => {
-      const i = _(r), c = _(o);
-      return H(c, i);
-    }), s[0]);
-  } catch (t) {
-    return console.error("Error reading directory:", t), null;
+    const items = fs.readdirSync(dirPath, { withFileTypes: true });
+    const versionFolders = items.filter((item) => item.isDirectory() && /^\d+(\.\d+)*$/.test(item.name)).map((item) => item.name);
+    if (versionFolders.length === 0) {
+      return null;
+    }
+    versionFolders.sort((a, b) => {
+      const vA = parseVersion(a);
+      const vB = parseVersion(b);
+      return compareVersions(vB, vA);
+    });
+    return versionFolders[0];
+  } catch (err) {
+    console.error("Error reading directory:", err);
+    return null;
   }
 }
-function J() {
-  const e = {
+function getLatestVersionPath() {
+  const result = {
     versionNumber: "",
     versionPath: "",
     serverPath: "",
     clientPath: "",
     configPath: ""
-  }, t = u.join(A.homedir(), "AppData", "Local", "PulseMedica", "FIH"), s = q(t);
-  if (s !== null) {
-    const r = u.join(t, s), o = u.join(r, "server", "PMServer.exe"), i = u.join(r, "client", "FSS UI.exe"), c = u.join(r, "server", "config.exe");
-    return e.versionNumber = s, e.versionPath = r, e.serverPath = o, e.clientPath = i, e.configPath = c, console.log(e), e;
-  } else
-    return e.versionNumber = "[Error] Unable to determine current version #", e.versionPath = "[Error] Unable to find current version path.", e.serverPath = "[Error] Unable to find server path.", e.clientPath = "[Error] Unable to find client path.", e.configPath = "[Error] Unable to find config path.", e;
-}
-async function Y() {
-  const e = "C:/ProgramData/Pulsemedica/FSS/config/hw_profile.json";
-  try {
-    return await E.access(e), await E.readFile(e, "utf-8");
-  } catch (t) {
-    if (t instanceof Error)
-      return JSON.stringify({
-        Message: "Config file not found, or could not be opened.",
-        Config_Path: e
-      }, null, 2);
-    throw t;
+  };
+  const basePath = path.join(os.homedir(), "AppData", "Local", "PulseMedica", "FIH");
+  const currentVersion = getHighestVersionFolder(basePath);
+  if (currentVersion !== null) {
+    const latestVersionPath = path.join(basePath, currentVersion);
+    const serverPath = path.join(latestVersionPath, "server", "PMServer.exe");
+    const clientPath = path.join(latestVersionPath, "client", "FSS UI.exe");
+    const configPath = path.join(latestVersionPath, "server", "config.exe");
+    result.versionNumber = currentVersion;
+    result.versionPath = latestVersionPath;
+    result.serverPath = serverPath;
+    result.clientPath = clientPath;
+    result.configPath = configPath;
+    console.log(result);
+    return result;
+  } else {
+    result.versionNumber = "[Error] Unable to determine current version #";
+    result.versionPath = "[Error] Unable to find current version path.";
+    result.serverPath = "[Error] Unable to find server path.";
+    result.clientPath = "[Error] Unable to find client path.";
+    result.configPath = "[Error] Unable to find config path.";
+    return result;
   }
 }
-async function z(e) {
-  const t = "C:/ProgramData/Pulsemedica/FSS/config/hw_profile.json";
-  return E.writeFile(t, e, "utf8").then(() => (console.log("Config successfully saved to:", t), `[Success] Config updated and saved to: ${t}`)).catch((s) => (console.error("Error saving config:", s), `[Error] Couldn't save config: ${s.message}`));
-}
-j(import.meta.url);
-const v = u.dirname(C(import.meta.url));
-process.env.APP_ROOT = u.join(v, "..");
-const I = process.env.VITE_DEV_SERVER_URL, le = u.join(process.env.APP_ROOT, "dist-electron"), K = u.join(process.env.APP_ROOT, "dist");
-process.env.VITE_PUBLIC = I ? u.join(process.env.APP_ROOT, "public") : K;
-let f;
-function F() {
-  f = new b({
-    title: "FemtoLauncher",
-    icon: u.join(process.env.VITE_PUBLIC, "electron-vite.svg"),
-    webPreferences: {
-      preload: u.join(v, "preload.mjs")
+async function loadConfigContent() {
+  const configPath = "C:/ProgramData/Pulsemedica/FSS/config/hw_profile.json";
+  try {
+    await fs$1.access(configPath);
+    const fileContents = await fs$1.readFile(configPath, "utf-8");
+    return fileContents;
+  } catch (err) {
+    if (err instanceof Error) {
+      const defaultConfig = {
+        Message: "Config file not found, or could not be opened.",
+        Config_Path: configPath
+      };
+      const defaultContent = JSON.stringify(defaultConfig, null, 2);
+      return defaultContent;
     }
-  }), f.webContents.on("did-finish-load", () => {
-    f == null || f.webContents.send("main-process-message", (/* @__PURE__ */ new Date()).toLocaleString());
-  }), I ? f.loadURL(I) : f.loadFile(u.join(v, "../dist/index.html"));
+    throw err;
+  }
 }
-y.on("window-all-closed", () => {
-  process.platform !== "darwin" && (y.quit(), f = null);
+async function saveConfig(textContent) {
+  const configPath = "C:/ProgramData/Pulsemedica/FSS/config/hw_profile.json";
+  return fs$1.writeFile(configPath, textContent, "utf8").then(() => {
+    console.log("Config successfully saved to:", configPath);
+    return `[Success] Config updated and saved to: ${configPath}`;
+  }).catch((err) => {
+    console.error("Error saving config:", err);
+    return `[Error] Couldn't save config: ${err.message}`;
+  });
+}
+createRequire(import.meta.url);
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+process.env.APP_ROOT = path.join(__dirname, "..");
+const VITE_DEV_SERVER_URL = process.env["VITE_DEV_SERVER_URL"];
+const MAIN_DIST = path.join(process.env.APP_ROOT, "dist-electron");
+const RENDERER_DIST = path.join(process.env.APP_ROOT, "dist");
+process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL ? path.join(process.env.APP_ROOT, "public") : RENDERER_DIST;
+let win;
+function createWindow() {
+  win = new BrowserWindow({
+    title: "FemtoLauncher",
+    icon: path.join(process.env.VITE_PUBLIC, "electron-vite.svg"),
+    webPreferences: {
+      preload: path.join(__dirname, "preload.mjs")
+    }
+  });
+  win.webContents.on("did-finish-load", () => {
+    win == null ? void 0 : win.webContents.send("main-process-message", (/* @__PURE__ */ new Date()).toLocaleString());
+  });
+  if (VITE_DEV_SERVER_URL) {
+    win.loadURL(VITE_DEV_SERVER_URL);
+  } else {
+    win.loadFile(path.join(__dirname, "../dist/index.html"));
+  }
+}
+app.on("window-all-closed", () => {
+  if (process.platform !== "darwin") {
+    app.quit();
+    win = null;
+  }
 });
-y.on("activate", () => {
-  b.getAllWindows().length === 0 && F();
+app.on("activate", () => {
+  if (BrowserWindow.getAllWindows().length === 0) {
+    createWindow();
+  }
 });
-y.whenReady().then(
+app.whenReady().then(
   () => {
-    F();
+    createWindow();
   }
 );
-g.handle("get-paths", async (e, ...t) => J());
-g.handle("run-config", async (e, t) => (console.log("------- run-config has been called -------"), new Promise((s, r) => {
-  var a, l;
-  let o = [], i = "", c = "";
-  const d = w(t + " -d");
-  (a = d.stdout) == null || a.on("data", (n) => {
-    const m = n.toString();
-    i += m, m.split(`
-`).forEach((p) => {
-      p.trim() && (o.push(p), console.log(`${p}`));
+ipcMain.handle("get-paths", async (event, ...args) => {
+  const result = getLatestVersionPath();
+  return result;
+});
+ipcMain.handle("run-config", async (event, configPath) => {
+  console.log("------- run-config has been called -------");
+  return new Promise((resolve, reject) => {
+    var _a, _b;
+    let combinedOutputLines = [];
+    let stdoutData = "";
+    let stderrData = "";
+    const child = exec(configPath + " -d");
+    (_a = child.stdout) == null ? void 0 : _a.on("data", (data) => {
+      const chunk = data.toString();
+      stdoutData += chunk;
+      chunk.split("\n").forEach((line) => {
+        if (line.trim()) {
+          combinedOutputLines.push(line);
+          console.log(`${line}`);
+        }
+      });
     });
-  }), (l = d.stderr) == null || l.on("data", (n) => {
-    const m = n.toString();
-    c += m, m.split(`
-`).forEach((p) => {
-      p.trim() && (o.push(p), console.log(`${p}`));
+    (_b = child.stderr) == null ? void 0 : _b.on("data", (data) => {
+      const chunk = data.toString();
+      stderrData += chunk;
+      chunk.split("\n").forEach((line) => {
+        if (line.trim()) {
+          combinedOutputLines.push(line);
+          console.log(`${line}`);
+        }
+      });
     });
-  }), d.on("close", (n) => {
-    console.log(`child process exited with code ${n}`);
-    const m = {
-      // Note that stdout & stderr aren't actually used, but if you need them here they are.
-      stdout: i,
-      stderr: c,
-      outputLines: o,
-      // 1 array that has the output. This is to maintain sequential ordering.
-      exitCode: n,
-      success: n === 0
-    };
-    if (n === 0)
-      s(m);
-    else {
-      const p = new Error(`Child process exited with code ${n}`);
-      r(p);
+    child.on("close", (code) => {
+      console.log(`child process exited with code ${code}`);
+      const result = {
+        // Note that stdout & stderr aren't actually used, but if you need them here they are.
+        stdout: stdoutData,
+        stderr: stderrData,
+        outputLines: combinedOutputLines,
+        // 1 array that has the output. This is to maintain sequential ordering.
+        exitCode: code,
+        success: code === 0
+      };
+      if (code === 0) {
+        resolve(result);
+      } else {
+        const error = new Error(`Child process exited with code ${code}`);
+        reject(error);
+      }
+    });
+    child.on("error", (err) => {
+      console.error("Failed to start child process.", err);
+      `Failed to start process: ${err.message}`;
+      reject(err);
+    });
+  });
+});
+ipcMain.handle("run-sw-sim", async (event, serverPath, clientPath) => {
+  var _a, _b;
+  console.log("--------- Running software in simulation ---------\n");
+  const server_ready_path = join(__dirname, "..", "server_ready.txt");
+  if (fs.existsSync(server_ready_path)) {
+    console.log("A server ready file already exists, removing it now.");
+    try {
+      fs.unlinkSync(server_ready_path);
+    } catch (err) {
+      if (err.code !== "ENOENT") {
+        throw err;
+      }
     }
-  }), d.on("error", (n) => {
-    console.error("Failed to start child process.", n), `${n.message}`, r(n);
+  }
+  const child = exec(serverPath + " sim");
+  (_a = child.stdout) == null ? void 0 : _a.on("data", (data) => {
+    console.log(`stdout: ${data}`);
+    event.sender.send("server-stdout", data.toString());
   });
-})));
-g.handle("run-sw-sim", async (e, t, s) => {
-  var a, l;
-  console.log(`--------- Running software in simulation ---------
-`);
-  const r = R(v, "..", "server_ready.txt");
-  h.existsSync(r) && (console.log("A server ready file already exists, removing it now."), h.unlinkSync(r));
-  const o = w(t + " sim");
-  (a = o.stdout) == null || a.on("data", (n) => {
-    console.log(`stdout: ${n}`), e.sender.send("server-stdout", n.toString());
-  }), (l = o.stderr) == null || l.on("data", (n) => {
-    console.error(`stderr: ${n}`), e.sender.send("server-stderr", n.toString());
-  }), o.on("close", (n) => {
-    console.log(`Server process exited with code ${n}`), e.sender.send("server-close", n);
+  (_b = child.stderr) == null ? void 0 : _b.on("data", (data) => {
+    console.error(`stderr: ${data}`);
+    event.sender.send("server-stderr", "[Error] " + data.toString());
   });
-  const i = 30;
-  let c = 0;
-  const d = setInterval(() => {
-    h.existsSync(r) && (clearInterval(d), e.sender.send("server-sim-ready", !0), console.log("Server is ready, opening UI..."), w(`"${s}"`)), c++, c > i && (clearInterval(d), console.error("Timeout: server_ready.txt not found."), e.sender.send("server-sim-ready", !1), o.kill());
+  child.on("close", (code) => {
+    console.log(`Server process exited with code ${code}`);
+    event.sender.send("server-close", code);
+  });
+  const timeout = 30;
+  let timer = 0;
+  const interval = setInterval(() => {
+    if (fs.existsSync(server_ready_path)) {
+      clearInterval(interval);
+      event.sender.send("server-stdout", "[Success] Server ready, starting UI now.");
+      console.log("Server is ready, opening UI...");
+      exec(`"${clientPath}"`);
+    }
+    timer++;
+    if (timer > timeout) {
+      clearInterval(interval);
+      console.error("Timeout: server_ready.txt not found.");
+      event.sender.send("server-stderr", "[Error] Server Timeout. Failed to start.");
+      child.kill();
+    }
   }, 1e3);
-  return { success: !0, message: "Server process initiated successfully & UI opened." };
+  return { success: true, message: "Server process initiated successfully & UI opened." };
 });
-g.handle("run-sw-target", async (e, t, s) => {
-  var a, l;
-  console.log(`--------- Running server in target ---------
-`);
-  const r = R(v, "..", "server_ready.txt");
-  h.existsSync(r) && (console.log("A server ready file already exists, removing it now."), h.unlinkSync(r));
-  const o = w(t);
-  (a = o.stdout) == null || a.on("data", (n) => {
-    console.log(`stdout: ${n}`), e.sender.send("server-stdout", n.toString());
-  }), (l = o.stderr) == null || l.on("data", (n) => {
-    console.error(`stderr: ${n}`), e.sender.send("server-stderr", n.toString());
-  }), o.on("close", (n) => {
-    console.log(`Server process exited with code ${n}`), e.sender.send("server-close", n);
+ipcMain.handle("run-sw-target", async (event, serverPath, clientPath) => {
+  var _a, _b;
+  console.log("--------- Running server in target ---------\n");
+  const server_ready_path = join(__dirname, "..", "server_ready.txt");
+  if (fs.existsSync(server_ready_path)) {
+    console.log("A server ready file already exists, removing it now.");
+    try {
+      fs.unlinkSync(server_ready_path);
+    } catch (err) {
+      if (err.code !== "ENOENT") {
+        throw err;
+      }
+    }
+  }
+  const child = exec(serverPath);
+  (_a = child.stdout) == null ? void 0 : _a.on("data", (data) => {
+    console.log(`stdout: ${data}`);
+    event.sender.send("server-stdout", data.toString());
   });
-  const i = 30;
-  let c = 0;
-  const d = setInterval(() => {
-    h.existsSync(r) && (clearInterval(d), e.sender.send("server-ready", !0), console.log("Server is ready, opening UI..."), w(`"${s}"`)), c++, c > i && (clearInterval(d), console.error("Timeout: server_ready.txt not found."), e.sender.send("server-ready", !1), o.kill());
+  (_b = child.stderr) == null ? void 0 : _b.on("data", (data) => {
+    console.error(`stderr: ${data}`);
+    event.sender.send("server-stderr", "[Error] " + data.toString());
+  });
+  child.on("close", (code) => {
+    console.log(`Server process exited with code ${code}`);
+    event.sender.send("server-close", code);
+  });
+  const timeout = 30;
+  let timer = 0;
+  const interval = setInterval(() => {
+    if (fs.existsSync(server_ready_path)) {
+      clearInterval(interval);
+      event.sender.send("server-stdout", "[Success] Server ready, starting UI now.");
+      console.log("Server is ready, opening UI...");
+      exec(`"${clientPath}"`);
+    }
+    timer++;
+    if (timer > timeout) {
+      clearInterval(interval);
+      console.error("Timeout: server_ready.txt not found.");
+      event.sender.send("server-stderr", "[Error] Server Timeout. Failed to start.");
+      child.kill();
+    }
   }, 1e3);
-  return { success: !0, message: "Server process initiated successfully & UI opened." };
+  return { success: true, message: "Server process initiated successfully & UI opened." };
 });
-g.handle("close-software", async (e, t) => {
-  const s = "PMServer.exe", r = "FSS UI.exe", o = {
+ipcMain.handle("close-software", async (event, processName) => {
+  const serverProcess = "PMServer.exe";
+  const uiProcess = "FSS UI.exe";
+  const result = {
     serverResponse: "[Error] Some error occurred while trying to close PMServer.exe",
     uiResponse: "[Error] Some error occurred while trying to close FSS UI.exe"
-  }, i = (c, d, a = 1e4) => Promise.race([
-    new Promise((l) => {
-      w(`taskkill /IM "${c}" /F`, (n, m, p) => {
-        l(n ? `[Error] Could not kill ${d}.` : `[Success] ${d} successfully killed.`);
-      });
-    }),
-    // Timeout in case it takes too long to return from the promise.
-    new Promise(
-      (l) => setTimeout(() => l(`[Error] Timeout while trying to kill ${d}.`), a)
-    )
+  };
+  const killProcess = (process2, label, timeoutMs = 1e4) => {
+    return Promise.race([
+      new Promise((resolve) => {
+        exec(`taskkill /IM "${process2}" /F`, (err, stdout, stderr) => {
+          if (err) {
+            resolve(`[Error] Could not kill ${label}.`);
+          } else {
+            resolve(`[Success] ${label} successfully killed.`);
+          }
+        });
+      }),
+      // Timeout in case it takes too long to return from the promise.
+      new Promise(
+        (resolve) => setTimeout(() => resolve(`[Error] Timeout while trying to kill ${label}.`), timeoutMs)
+      )
+    ]);
+  };
+  await Promise.all([
+    killProcess(serverProcess, "PMServer"),
+    killProcess(uiProcess, "FSS UI")
   ]);
-  return await Promise.all([
-    i(s, "PMServer"),
-    i(r, "FSS UI")
-  ]), o.serverResponse = "[Success] PMServer.exe was closed successfully.", o.uiResponse = "[Success] FSS UI.exe was closed successfully.", o;
+  result.serverResponse = "[Success] PMServer.exe was closed successfully.";
+  result.uiResponse = "[Success] FSS UI.exe was closed successfully.";
+  return result;
 });
-g.handle("poll-service", async (e, t) => {
+ipcMain.handle("poll-service", async (_event, matchPattern) => {
   try {
-    const s = await G();
-    return t ? s.some(
-      (r) => r.name.toLowerCase().includes(t.toLowerCase())
-    ) : !1;
-  } catch (s) {
-    return console.error("Error polling processes:", s), !1;
+    const processes = await psList();
+    if (!matchPattern) return false;
+    return processes.some(
+      (proc) => proc.name.toLowerCase().includes(matchPattern.toLowerCase())
+    );
+  } catch (err) {
+    console.error("Error polling processes:", err);
+    return false;
   }
 });
-g.handle("read-config", async () => Y());
-g.handle("save-config", async (e, t) => await z(t));
+ipcMain.handle("read-config", async () => {
+  const configContent = loadConfigContent();
+  return configContent;
+});
+ipcMain.handle("save-config", async (event, textContent) => {
+  const res = await saveConfig(textContent);
+  return res;
+});
 export {
-  le as MAIN_DIST,
-  K as RENDERER_DIST,
-  I as VITE_DEV_SERVER_URL
+  MAIN_DIST,
+  RENDERER_DIST,
+  VITE_DEV_SERVER_URL
 };

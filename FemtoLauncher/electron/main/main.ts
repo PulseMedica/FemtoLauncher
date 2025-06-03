@@ -170,9 +170,15 @@ ipcMain.handle('run-sw-sim', async (event, serverPath, clientPath) => {
     const server_ready_path = join(__dirname, "..", "server_ready.txt");
 
     // 1) Remove any old server_ready.txt
-    if (fs.existsSync(server_ready_path)){
+    if (fs.existsSync(server_ready_path)) {
         console.log("A server ready file already exists, removing it now.")
-        fs.unlinkSync(server_ready_path);
+        try {
+            fs.unlinkSync(server_ready_path);
+        } catch (err) {
+            if ((err as NodeJS.ErrnoException).code !== 'ENOENT') {
+                throw err; // only rethrow if it's not a "file not found" error
+            }
+        }
     }
 
     // 2) Run the server
@@ -187,7 +193,7 @@ ipcMain.handle('run-sw-sim', async (event, serverPath, clientPath) => {
 
     child.stderr?.on('data', data => {
         console.error(`stderr: ${data}`);
-        event.sender.send('server-stderr', data.toString());
+        event.sender.send('server-stderr', '[Error] ' + data.toString());
     });
 
     child.on('close', code => {
@@ -203,7 +209,7 @@ ipcMain.handle('run-sw-sim', async (event, serverPath, clientPath) => {
             clearInterval(interval);
 
              // 5) Open the UI
-            event.sender.send('server-sim-ready', true);
+            event.sender.send('server-stdout', "[Success] Server ready, starting UI now.");
             console.log("Server is ready, opening UI...")
             exec(`"${clientPath}"`); // Must be quoted to handle spaces.
         }
@@ -213,7 +219,7 @@ ipcMain.handle('run-sw-sim', async (event, serverPath, clientPath) => {
             clearInterval(interval);
             console.error("Timeout: server_ready.txt not found.");
             // Send a specific event for timeout
-            event.sender.send('server-sim-ready', false);
+            event.sender.send('server-stderr', '[Error] Server Timeout. Failed to start.');
             // Optionally, kill the child process if it timed out
             child.kill();
         }
@@ -229,9 +235,15 @@ ipcMain.handle('run-sw-target', async (event, serverPath, clientPath) => {
     const server_ready_path = join(__dirname, "..", "server_ready.txt");
 
     // 1) Remove any old server_ready.txt
-    if (fs.existsSync(server_ready_path)){
+    if (fs.existsSync(server_ready_path)) {
         console.log("A server ready file already exists, removing it now.")
-        fs.unlinkSync(server_ready_path);
+        try {
+            fs.unlinkSync(server_ready_path);
+        } catch (err) {
+            if ((err as NodeJS.ErrnoException).code !== 'ENOENT') {
+                throw err; // only rethrow if it's not a "file not found" error
+            }
+        }
     }
 
     // 2) Run the server
@@ -246,7 +258,7 @@ ipcMain.handle('run-sw-target', async (event, serverPath, clientPath) => {
 
     child.stderr?.on('data', data => {
         console.error(`stderr: ${data}`);
-        event.sender.send('server-stderr', data.toString());
+        event.sender.send('server-stderr', '[Error] ' + data.toString());
     });
 
     child.on('close', code => {
@@ -262,7 +274,7 @@ ipcMain.handle('run-sw-target', async (event, serverPath, clientPath) => {
             clearInterval(interval);
 
              // 5) Open the UI
-            event.sender.send('server-ready', true);
+            event.sender.send('server-stdout', "[Success] Server ready, starting UI now.");
             console.log("Server is ready, opening UI...")
             exec(`"${clientPath}"`); // Must be quoted to handle spaces.
         }
@@ -272,7 +284,7 @@ ipcMain.handle('run-sw-target', async (event, serverPath, clientPath) => {
             clearInterval(interval);
             console.error("Timeout: server_ready.txt not found.");
             // Send a specific event for timeout
-            event.sender.send('server-ready', false);
+            event.sender.send('server-stderr', '[Error] Server Timeout. Failed to start.');
             // Optionally, kill the child process if it timed out
             child.kill();
         }
@@ -282,7 +294,7 @@ ipcMain.handle('run-sw-target', async (event, serverPath, clientPath) => {
     return { success: true, message: 'Server process initiated successfully & UI opened.' };
 });
 
-// 3) Kill Software - It's more straightforward to just let a .ps1 script handle it.
+// 3) Kill Software
 ipcMain.handle('close-software', async (event, processName) => {
   const serverProcess = "PMServer.exe";
   const uiProcess = "FSS UI.exe";
