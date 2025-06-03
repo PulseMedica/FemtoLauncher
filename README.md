@@ -2,6 +2,11 @@
 
 Exploratory repository to develop a launcher application to launch the FIH software.
 
+## Running the Application
+1. Run in developer with watch feature - ```npm run dev```
+2. Run in production -
+3. Build an executable - ```npm run build```
+
 ## Features
 
 - [x] Run Config.
