@@ -6,6 +6,14 @@ import tsConfigPaths from "vite-tsconfig-paths"
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  root: '.', // Make sure this points to where your index.html lives
+  build: {
+    outDir: 'dist', // This should match what your main.ts loads
+    emptyOutDir: true,
+    rollupOptions: {
+      input: path.resolve(__dirname, 'index.html'), // Ensures Vite bundles the right HTML
+    },
+  },
   plugins: [
     react(),
     tsConfigPaths(),

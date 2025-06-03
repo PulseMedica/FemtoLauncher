@@ -5,7 +5,7 @@ Exploratory repository to develop a launcher application to launch the FIH softw
 ## Running the Application
 1. Run in developer with watch feature - ```npm run dev```
 2. Run in production -
-3. Build an executable - ```npm run build```
+3. Build an executable - ```npm run make```
 
 ## Features
 
@@ -18,6 +18,7 @@ Exploratory repository to develop a launcher application to launch the FIH softw
 - [x] Explicit "kill software" button.
   - Currently this will look for and kill any UI and Server processes (takes around 5 seconds).
 - [ ] Have the launcher show changelogs. FemtoDeploy would have to download the changelog information and include it in the repo.
+- [ ] Button to open the elastic logging service.
 
 ## Updating FemtoDeploy
 
@@ -37,3 +38,4 @@ Exploratory repository to develop a launcher application to launch the FIH softw
 
 - [x] Close software takes too long — should probably show a "loading" state or bring output container to view, OR clear it.
 - [ ] Log messages in `output-container` are outputting the same message twice. *This is because of react dev mode. Not a real bug if ran in produyction*.
+- [ ] Need to configre production mode.
