@@ -14,9 +14,9 @@ async function loadConfigContent() {
 
   } catch (err: unknown) {
     if (err instanceof Error) {
-      // File doesn’t exist: create a default JSON, write it, and return that
+      // File doesn’t exist.
       const defaultConfig = {
-        Message: "Config file not found, or could not be opened.",
+        Message: "Config file not found, or could not be opened. Note that hw_profile gets deleted when you run config.exe for target!",
         Config_Path: configPath
       };
       const defaultContent = JSON.stringify(defaultConfig, null, 2);

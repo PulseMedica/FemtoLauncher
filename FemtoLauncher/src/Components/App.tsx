@@ -49,10 +49,10 @@ function App() {
   }, []);
 
   // Runs config.
-  const handleRunConfigClick = async() => {
+  const handleRunConfigClick = async(mode:string) => {
     setOutputLines([])
     setLoading(true);
-    const resultObject = await window.ipcRenderer.invoke('run-config', configPath);
+    const resultObject = await window.ipcRenderer.invoke('run-config', configPath, mode);
     const results = resultObject.outputLines;
     setLoading(false);
     setOutputLines(results);
@@ -154,12 +154,16 @@ function App() {
                 {<Services></Services>}
             </div>
 
-            <button id="btn-run-config" onClick={handleRunConfigClick} disabled={loading}>
-              Run Config
+            <button id="btn-run-config" onClick={() => handleRunConfigClick("target")} disabled={loading}>
+              Run Config (Target)
+            </button>
+
+            <button id="btn-run-config" onClick={() => handleRunConfigClick("sim")} disabled={loading}>
+              Run Config (Simulation)
             </button>
 
             <button id="btn-open-config-editor" onClick={() => setIsEditConfigOpen(true)} disabled={loading}>
-              Edit Config
+              Edit Config (HW_Profile)
             </button>
 
             <div> {/* Wrapped in div to align the warning icon. */}

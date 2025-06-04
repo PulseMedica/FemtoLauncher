@@ -97,14 +97,22 @@ ipcMain.handle('get-paths', async(event, ...args) => {
 })
 
 // 0) For run-config.
-ipcMain.handle('run-config', async (event, configPath) => {
+ipcMain.handle('run-config', async (event, configPath, mode) => {
   console.log("------- run-config has been called -------");
   return new Promise((resolve, reject) => {
     let combinedOutputLines: string[] = [];
     let stdoutData = '';
     let stderrData = '';
 
-    const child = exec(configPath + " -d");
+    let child;
+
+    if (mode === "sim"){
+      child = exec(configPath + " -d");
+    }
+    else{
+      console.log(configPath);
+      child = exec(configPath);
+    }
 
     child.stdout?.on('data', data => {
       const chunk = data.toString();
