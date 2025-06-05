@@ -33,12 +33,12 @@ Exploratory repository to develop a launcher application to launch the FIH softw
 - [ ] Have an "onStartup" for production that console.logs (to the renderer side) for good debugging purposes.
 - [ ] Unit tests.
 - [ ] Test edge case scenarios and ensure correct console messages.
-- [ ] Refactor: Move things out of `app.tsx` — the launcher is just one page, but the file is growing too large.
 - [ ] Put a timeout on the loading - this is done by error handling from the ipcMain process. Return an error message instead after a timeout.
 
 ## Known Issues
 
 - [x] Close software takes too long — should probably show a "loading" state or bring output container to view, OR clear it.
-- [ ] Log messages in `output-container` are outputting the same message twice. *This is because of react dev mode. Not a real bug if ran in produyction*.
-- [ ] Need to configre production mode.
+- [x] Log messages in `output-container` are outputting the same message twice. *This is because of react dev mode. Not a real bug if ran in produyction*.
 - [x] When app is bundled into executable - need to include the fastlist.exe for psList() to work correctly. *Fixed this by turning it into a local helper instead of a node module, and then bundling the .exe into an "extras" directory.*
+- [ ] Running target mode is a bit unreliable. The promise returns before the server_ready is done.
+- [ ] Need to set "loading" state WHILE server is running. This is so that the other buttons gets diabled.
