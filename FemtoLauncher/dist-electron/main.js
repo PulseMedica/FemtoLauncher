@@ -296,35 +296,40 @@ ipcMain.handle("run-sw", async (event, serverPath, clientPath, mode) => {
   });
 });
 ipcMain.handle("close-software", async (event, processName) => {
-  const serverProcess = "PMServer.exe";
-  const uiProcess = "FSS UI.exe";
+  const serverProcessName = "PMServer.exe";
+  const uiProcessName = "FSS UI.exe";
   const result = {
     serverResponse: "[Error] Some error occurred while trying to close PMServer.exe",
     uiResponse: "[Error] Some error occurred while trying to close FSS UI.exe"
   };
-  const killProcess = (process2, label, timeoutMs = 1e4) => {
+  const killProcessByName = async (targetName, label, timeoutMs = 1e4) => {
+    const processes = await processList();
+    const matching = processes.filter((p) => p.name === targetName);
+    if (matching.length === 0) {
+      return `[Error] No running process found with name ${label}.`;
+    }
+    const killPromises = matching.map(
+      (proc) => new Promise((resolve, reject) => {
+        try {
+          process.kill(proc.pid, "SIGKILL");
+          resolve(true);
+        } catch (err) {
+          reject(`[Error] Failed to kill ${label} (PID ${proc.pid}): ${err}`);
+        }
+      })
+    );
     return Promise.race([
-      new Promise((resolve) => {
-        exec(`taskkill /IM "${process2}" /F`, (err, stdout, stderr) => {
-          if (err) {
-            resolve(`[Error] Could not kill ${label}.`);
-          } else {
-            resolve(`[Success] ${label} successfully killed.`);
-          }
-        });
+      Promise.allSettled(killPromises).then((results) => {
+        const allSucceeded = results.every((res) => res.status === "fulfilled");
+        return allSucceeded ? `[Success] ${label} successfully killed.` : `[Partial] Some instances of ${label} could not be killed.`;
       }),
-      // Timeout in case it takes too long to return from the promise.
       new Promise(
         (resolve) => setTimeout(() => resolve(`[Error] Timeout while trying to kill ${label}.`), timeoutMs)
       )
     ]);
   };
-  await Promise.all([
-    killProcess(serverProcess, "PMServer"),
-    killProcess(uiProcess, "FSS UI")
-  ]);
-  result.serverResponse = "[Success] PMServer.exe was closed successfully.";
-  result.uiResponse = "[Success] FSS UI.exe was closed successfully.";
+  result.serverResponse = await killProcessByName(serverProcessName, "PMServer");
+  result.uiResponse = await killProcessByName(uiProcessName, "FSS UI");
   return result;
 });
 ipcMain.handle("poll-service", async (_event, matchPattern) => {
