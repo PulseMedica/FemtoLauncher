@@ -4,6 +4,10 @@ const { FuseV1Options, FuseVersion } = require('@electron/fuses');
 module.exports = {
   packagerConfig: {
     asar: true,
+    extraResource: [ // Moves these resources to be next to app.asar (IE: "unpacks" it)
+      "./extras/fastlist-0.3.0-x64.exe",
+      "./extras/fastlist-0.3.0-x86.exe",
+    ]
   },
   rebuildConfig: {},
   makers: [
