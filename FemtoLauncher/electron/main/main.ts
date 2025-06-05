@@ -246,9 +246,6 @@ ipcMain.handle('run-sw', async (event, serverPath, clientPath, mode) => {
     });
 });
 
-
-
-
 // 3) Kill Software
 ipcMain.handle('close-software', async (event, processName) => {
   const serverProcess = "PMServer.exe";
