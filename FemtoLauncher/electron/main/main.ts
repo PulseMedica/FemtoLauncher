@@ -172,135 +172,82 @@ ipcMain.handle('run-config', async (event, configPath, mode) => {
   });
 });
 
-// 1) Run software in sim.
-ipcMain.handle('run-sw-sim', async (event, serverPath, clientPath) => {
-    console.log("--------- Running software in simulation ---------\n")
+// 1) Run software. Renderer sends the mode (target v. sim).
+ipcMain.handle('run-sw', async (event, serverPath, clientPath, mode) => {
+    console.log("--------- Running server in target ---------\n");
     const server_ready_path = join(__dirname, "..", "server_ready.txt");
 
     // 1) Remove any old server_ready.txt
     if (fs.existsSync(server_ready_path)) {
-        console.log("A server ready file already exists, removing it now.")
+        console.log("A server ready file already exists, removing it now.");
         try {
             fs.unlinkSync(server_ready_path);
         } catch (err) {
-            if ((err as NodeJS.ErrnoException).code !== 'ENOENT') {
-                throw err; // only rethrow if it's not a "file not found" error
-            }
+            if ((err as NodeJS.ErrnoException).code !== 'ENOENT') throw err;
         }
     }
 
-    // 2) Run the server
-    const child = exec(serverPath + ' sim');
+    // 2) Determine command based on mode
+    const serverCommand = mode === "sim" ? `${serverPath} sim` : serverPath;
+    const child = exec(serverCommand);
 
-    // 3) Send stdout / stderr data back to the renderer process through dedicated channels.
-    // These listeners will continue to send data as long as the child process runs.
-    child.stdout?.on('data', data => {
-        console.log(`stdout: ${data}`);
-        event.sender.send('server-stdout', data.toString());
-    });
+    // 3) Start a unified Promise watcher
+    return await new Promise<{ success: boolean; message: string }>((resolve) => {
+        const timeout = 45 * 1000;
+        let interval: NodeJS.Timeout;
+        let timedOut = false;
 
-    child.stderr?.on('data', data => {
-        console.error(`stderr: ${data}`);
-        event.sender.send('server-stderr', '[Error] ' + data.toString());
-    });
-
-    child.on('close', code => {
-        console.log(`Server process exited with code ${code}`);
-        event.sender.send('server-close', code);
-    });
-
-    // 4) Monitor for server_ready.txt. Must be done this way to ensure main process isn't interrupted.
-    const timeout = 30; // seconds
-    let timer = 0;
-    const interval = setInterval(() => {
-        if (fs.existsSync(server_ready_path)) {
-            clearInterval(interval);
-
-             // 5) Open the UI
-            event.sender.send('server-stdout', "\n[Success] Server ready, starting UI now.");
-            console.log("Server is ready, opening UI...")
-            exec(`"${clientPath}"`); // Must be quoted to handle spaces.
-        }
-
-        timer++;
-        if (timer > timeout) {
-            clearInterval(interval);
-            console.error("Timeout: server_ready.txt not found.");
-            // Send a specific event for timeout
-            event.sender.send('server-stderr', '\n[Error] Server Timeout. Failed to start.');
-            // Optionally, kill the child process if it timed out
-            child.kill();
-        }
-    }, 1000); // Check every second
-
-    // Return from handle. This is the object hat result = ipcRenderer.invoke() receives.
-    return { success: true, message: 'Server process initiated successfully & UI opened.' };
-});
-
-// 2) Run software in target.
-ipcMain.handle('run-sw-target', async (event, serverPath, clientPath) => {
-    console.log("--------- Running server in target ---------\n")
-    const server_ready_path = join(__dirname, "..", "server_ready.txt");
-
-    // 1) Remove any old server_ready.txt
-    if (fs.existsSync(server_ready_path)) {
-        console.log("A server ready file already exists, removing it now.")
-        try {
-            fs.unlinkSync(server_ready_path);
-        } catch (err) {
-            if ((err as NodeJS.ErrnoException).code !== 'ENOENT') {
-                throw err; // only rethrow if it's not a "file not found" error
+        const checkReadyFile = () => {
+            if (fs.existsSync(server_ready_path)) {
+                clearInterval(interval);
+                clearTimeout(timeoutHandle);
+                event.sender.send('server-stdout', "[Success] Server ready, starting UI now.");
+                console.log("Server is ready, opening UI...");
+                exec(`"${clientPath}"`);
+                resolve({ success: true, message: '[Success] Server process initiated successfully & UI opened.' });
             }
-        }
-    }
+        };
 
-    // 2) Run the server
-    const child = exec(serverPath);
+        // Poll for server_ready.txt
+        interval = setInterval(checkReadyFile, 1000);
 
-    // 3) Send stdout / stderr data back to the renderer process through dedicated channels.
-    // These listeners will continue to send data as long as the child process runs.
-    child.stdout?.on('data', data => {
-        console.log(`stdout: ${data}`);
-        event.sender.send('server-stdout', data.toString());
-    });
-
-    child.stderr?.on('data', data => {
-        console.error(`stderr: ${data}`);
-        event.sender.send('server-stderr', '[Error] ' + data.toString());
-    });
-
-    child.on('close', code => {
-        console.log(`Server process exited with code ${code}`);
-        event.sender.send('server-close', code);
-    });
-
-    // 4) Monitor for server_ready.txt. Must be done this way to ensure main process isn't interrupted.
-    const timeout = 30; // seconds
-    let timer = 0;
-    const interval = setInterval(() => {
-        if (fs.existsSync(server_ready_path)) {
+        // Timeout fallback
+        const timeoutHandle = setTimeout(() => {
+            timedOut = true;
             clearInterval(interval);
-
-             // 5) Open the UI
-            event.sender.send('server-stdout', "\n[Success] Server ready, starting UI now.");
-            console.log("Server is ready, opening UI...")
-            exec(`"${clientPath}"`); // Must be quoted to handle spaces.
-        }
-
-        timer++;
-        if (timer > timeout) {
-            clearInterval(interval);
-            console.error("Timeout: server_ready.txt not found.");
-            // Send a specific event for timeout
-            event.sender.send('server-stderr', '\n[Error] Server Timeout. Failed to start.');
-            // Optionally, kill the child process if it timed out
             child.kill();
-        }
-    }, 1000); // Check every second
+            event.sender.send('server-stderr', '[Error] Server Timeout. Failed to start.');
+            console.error("Timeout: server_ready.txt not found.");
+            resolve({ success: false, message: "[Error] Server process was not able to start." });
+        }, timeout);
 
-    // Return from handle. This is the object hat result = ipcRenderer.invoke() receives.
-    return { success: true, message: 'Server process initiated successfully & UI opened.' };
+        // Stream stdout
+        child.stdout?.on('data', (data) => {
+            console.log(`stdout: ${data}`);
+            event.sender.send('server-stdout', data.toString());
+        });
+
+        // Fail fast on stderr
+        child.stderr?.on('data', (data) => {
+            const msg = data.toString();
+            console.error(`stderr: ${msg}`);
+            event.sender.send('server-stderr', '[Error] ' + msg);
+
+            clearInterval(interval);
+            clearTimeout(timeoutHandle);
+            child.kill();
+            resolve({ success: false, message: '[Error] ' + msg });
+        });
+
+        // Optional: handle process close
+        child.on('close', (code) => {
+            if (!timedOut) console.log(`Server process exited with code ${code}`);
+        });
+    });
 });
+
+
+
 
 // 3) Kill Software
 ipcMain.handle('close-software', async (event, processName) => {

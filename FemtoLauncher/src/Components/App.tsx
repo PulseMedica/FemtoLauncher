@@ -114,12 +114,14 @@ function App() {
     setLoading(true);
     if (mode === "sim" ){
       setOutputLines((prevLines => [...prevLines, "---- Running Server in Simulation ----\n"]));
-      const result = await window.ipcRenderer.invoke('run-sw-sim', serverPath, clientPath);
+
     }
     else if (mode === "target") {
       setOutputLines((prevLines => [...prevLines, "---- Running Server in Target ----\n"]));
-      const result = await window.ipcRenderer.invoke("run-sw-target", serverPath, clientPath)
     }
+
+    const result = await window.ipcRenderer.invoke('run-sw', serverPath, clientPath, mode);
+    console.log("Renderer Result:", result)
     setLoading(false);
   }
 
@@ -183,7 +185,8 @@ function App() {
                 ) : (
                     outputLines.map((line, index) => (
                         <div key={index} className={`${getLineClass(line)}`}>
-                            {'\n' + line}
+                            {line + '\n'}
+                            <br />
                         </div>
                     ))
                 )}
