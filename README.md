@@ -30,6 +30,7 @@ Exploratory repository to develop a launcher application to launch the FIH softw
 
 - [x] Launch software should only be enabled if all server/client artifacts have been found.
 - [x] Display (deploy) version number on the UI.
+- [ ] Have an "onStartup" for production that console.logs (to the renderer side) for good debugging purposes.
 - [ ] Unit tests.
 - [ ] Test edge case scenarios and ensure correct console messages.
 - [ ] Refactor: Move things out of `app.tsx` — the launcher is just one page, but the file is growing too large.
@@ -40,4 +41,4 @@ Exploratory repository to develop a launcher application to launch the FIH softw
 - [x] Close software takes too long — should probably show a "loading" state or bring output container to view, OR clear it.
 - [ ] Log messages in `output-container` are outputting the same message twice. *This is because of react dev mode. Not a real bug if ran in produyction*.
 - [ ] Need to configre production mode.
-- [ ] When app is bundled into executable - need to include the fastlist.exe for psList() to work correctly.
+- [x] When app is bundled into executable - need to include the fastlist.exe for psList() to work correctly. *Fixed this by turning it into a local helper instead of a node module, and then bundling the .exe into an "extras" directory.*

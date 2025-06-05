@@ -6,7 +6,7 @@ import { join } from 'path';
 import { exec, spawn } from "node:child_process";
 import { config } from 'node:process';
 import fs from "fs";
-import psList from 'ps-list';
+import processList from './helpers/processList.ts';
 
 // MODULES
 import getLatestVersionPath from './helpers/getLatestVersionPath.ts'
@@ -345,7 +345,7 @@ ipcMain.handle('close-software', async (event, processName) => {
 // 4) Polls to see if pmserver is running.
 ipcMain.handle('poll-service', async (_event, matchPattern: string) => {
   try {
-    const processes = await psList();
+    const processes = await processList();
 
     // If matchPattern is empty or null, return false
     if (!matchPattern) return false;
@@ -370,4 +370,9 @@ ipcMain.handle('read-config', async() => {
 ipcMain.handle('save-config', async(event, textContent) => {
   const res = await saveConfig(textContent);
   return res;
+})
+
+ipcMain.handle('debug', async(event) => {
+  const processes = await processList();
+  return processes;
 })
