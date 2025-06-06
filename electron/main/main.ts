@@ -52,12 +52,12 @@ function createWindow() {
 
   // For 1440P displays:
   if (screenWidth > 1920 && screenHeight > 1080 ){
-    scaleFactor = 1.2;
+    scaleFactor = 1.4;
   }
 
   // For 4K displays:
   else if (screenWidth > 2560 && screenHeight > 1440 ){
-    scaleFactor = 1.4;
+    scaleFactor = 1.6;
   }
 
   win = new BrowserWindow({
@@ -68,6 +68,7 @@ function createWindow() {
     },
 
     // Window Styling
+    resizable: true,
     width: Math.round(baseWidth * scaleFactor),
     height: Math.round(baseHeight * scaleFactor),
     autoHideMenuBar: true,
