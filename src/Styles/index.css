@@ -4,6 +4,18 @@
   font-family: "Roboto", Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
+  --titlebar-height: 31px;
+
+  /* Colours */
+  --primary-black: #0c0c0c;
+  --primary-dark-gray: #444C55;
+  --primary-light-gray: #BEC5CD;
+  --pm-cyan: #05DDDD;
+  --soft-red: #ff9dab;
+  --success-green: rgb(157, 253, 157);
+  --gradient-primary-gray: linear-gradient(180deg, #212326 5.8%, #444C55 94.2%);
+  --warning-yellow: #fce6a2;
+  --warning-yellow-text: #856404;
 }
 
 body {

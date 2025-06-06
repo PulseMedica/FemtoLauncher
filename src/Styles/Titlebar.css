@@ -3,9 +3,9 @@
     position: fixed;
     top: 0;
     left: 0;
-    height: 31px; /* Match titleBarOverlay height */
+    height: var(--titlebar-height); /* Match titleBarOverlay height */
     width: 100%;
-    background: #444C55;
+    background: var(--primary-dark-gray);
     color: white;
     display: flex;
     justify-content: flex-start; /* <-- aligns content to the left */

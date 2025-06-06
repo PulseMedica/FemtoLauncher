@@ -22,8 +22,8 @@
   left: 0;
   right: 80px;
   width: 300px;
-  background-color: #fce6a2;
-  color: #856404;
+  background-color: var(--warning-yellow);
+  color: var(--warning-yellow-text);
   padding: 16px;
   border-radius: 5px;
   box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.2);

@@ -1,6 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono&display=swap');
 
 .app-container{
+  padding-top: var(--titlebar-height); /* To account for titlebar height. */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -17,7 +18,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background-color: #444C55; /* Primary dark grey. */
+  background-color: var(--primary-dark-gray);
   padding: 25px 50px;
   border-radius: 10px;
   box-shadow: 0px 0px 80px 0px #00000099;
@@ -71,19 +72,19 @@
 }
 
 #btn-run-config{
-  background-color: #BEC5CD;
+  background-color: var(--primary-light-gray);
 }
 
 #btn-open-config-editor{
-  background-color: #BEC5CD;
+  background-color: var(--primary-light-gray);
 }
 
 #btn-launch-sw{
-  background-color: #05DDDD; /* PMCyan */
+  background-color: var(--pm-cyan);
 }
 
 #btn-close-sw{
-  background-color: #ff9dab;
+  background-color: var(--soft-red);
 }
 
 .mode-selector-container{
@@ -92,7 +93,7 @@
   justify-content: space-around;
   flex-direction: column;
   align-items: center;
-  background: linear-gradient(180deg, #212326 5.8%, #444C55 94.2%);
+  background: var(--gradient-primary-gray);
   padding: 16px;
   border-radius: 12px;
 }
@@ -102,7 +103,7 @@
   align-items: center;
   gap: 8px;
   color: white;
-  background: #444C55;
+  background: var(--primary-dark-gray);
   padding: 12px;
   border-radius: 8px;
 }
@@ -121,7 +122,7 @@
 }
 
 .radio-container input[type=radio]:checked{
-  background-color: #05DDDD;
+  background-color: var(--pm-cyan);
 
 }
 
@@ -133,7 +134,7 @@
   font-size: 12px;
   color: white; /* Styling it to look like a terminal. */
   width: 100%; /* match width of button continaer */
-  background-color: #0C0C0C; /* Primary black. */
+  background-color: var(--primary-black);
   border-radius: 10px;
   padding: 16px;
   box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px;
@@ -145,8 +146,8 @@
 #loading-icon {
   width: 35px;
   height: 35px;
-  border: 6px solid #444C55; /* Primary dark grey. (track) */
-  border-top: 6px solid #05DDDD; /* PMCyan (moving part) */
+  border: 6px solid var(--primary-dark-gray); /* (track) */
+  border-top: 6px solid var(--pm-cyan); /* (moving part) */
   border-radius: 50%;                 /* Makes it a circle */
   animation: spin 1s linear infinite; /* Spinning animation */
   box-sizing: border-box;
@@ -164,30 +165,30 @@
 
 /* Scrollbar Thumb */
 .output-container::-webkit-scrollbar-thumb {
-  background: #444C55;
+  background: var(--primary-dark-gray);
   border-radius: 12px;
 }
 
 /* Scrollbar Thumb on hover */
 .output-container::-webkit-scrollbar-thumb:hover {
-  background: #888;
+  background: var(--primary-light-gray);
 }
 
 /* Scrollbar Track Background */
 .output-container::-webkit-scrollbar-track {
-  background: #0C0C0C; /* Primary black. */
+  background: var(--primary-black);
   border-radius: 12px;
 }
 
 .error-line{
   line-height: 16px;
-  color: rgb(255, 155, 155);
+  color: var(--soft-red);
   font-size: 12px;
   white-space: pre-wrap; /* Preserve whitespace and allow wrapping + newlines */
 }
 
 .success-line{
-  color: rgb(157, 253, 157);
+  color: var(--success-green);
   font-size: 12px;
   white-space: pre-wrap; /* Preserve whitespace and allow wrapping + newlines */
 }

@@ -19,12 +19,12 @@
     border-radius: 50%;
     height: 30px;
     width: 30px;
-    background-color: rgb(157, 253, 157);
+    background-color: var(--success-green);
 }
 
 .service-dead{
     border-radius: 50%;
     height: 30px;
     width: 30px;
-    background-color: rgb(255, 155, 155);
+    background-color: var(--soft-red);
 }
