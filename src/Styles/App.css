@@ -7,8 +7,8 @@
 }
 
 .logo-container img{
-  margin-top: 15px;
-  width: 350px;
+  margin: 25px 0px 25px 0px;
+  width: 275px;
   height: auto;
 }
 
@@ -18,16 +18,14 @@
   align-items: center;
   justify-content: center;
   background-color: #444C55; /* Primary dark grey. */
-  padding: 40px 60px;
+  padding: 25px 50px;
   border-radius: 10px;
   box-shadow: 0px 0px 80px 0px #00000099;
   width: 600px;
-  height: fit-content;
-  scale: 0.9; /* I want the entire modal to be a little smaller... */
 }
 
 .title{
-  font-size: 2rem;
+  font-size: 1.5rem;
   margin-bottom: 28px;
   font-weight: 500;
   color: white;
@@ -38,7 +36,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .inputs-container button{ /* All buttons have the same length. */
@@ -56,8 +54,9 @@
 }
 
 #btn-run-config, #btn-launch-sw, #btn-close-sw, #btn-open-config-editor{
+  font-size: 12px;
   border-radius: 12px;
-  padding: 12px;
+  padding: 10px;
   box-shadow: rgba(6, 24, 44, 0.4) 0px 0px 0px 2px, rgba(6, 24, 44, 0.65) 0px 4px 6px -1px, rgba(255, 255, 255, 0.08) 0px 1px 0px inset;
   border: none;
 }
@@ -131,14 +130,14 @@
   display: flex;
   flex-wrap: wrap;
   font-family: 'Roboto Mono', monospace;
-  font-size: 14px;
+  font-size: 12px;
   color: white; /* Styling it to look like a terminal. */
   width: 100%; /* match width of button continaer */
   background-color: #0C0C0C; /* Primary black. */
   border-radius: 10px;
   padding: 16px;
   box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px;
-  max-height: 300px;
+  max-height: 275px;
   overflow-y: scroll;
   word-break: break-word; /* Handles really long horizontal strings so it doesn't extend larger than the parent. */
 }
