@@ -138,6 +138,7 @@ async function saveConfig(textContent) {
 }
 createRequire(import.meta.url);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const server_ready_path = join(__dirname, ...isDev ? [".."] : ["..", "..", ".."], "server_ready.txt");
 process.env.APP_ROOT = path.join(__dirname, "..");
 const VITE_DEV_SERVER_URL = process.env["VITE_DEV_SERVER_URL"];
 const MAIN_DIST = path.join(process.env.APP_ROOT, "dist-electron");
@@ -184,7 +185,7 @@ ipcMain.handle("get-paths", async (event, ...args) => {
 ipcMain.handle("startup-ui-logs", async (event) => {
   const result = {
     cwd: __dirname,
-    server_ready_path: join(__dirname, "..", "server_ready.txt")
+    server_ready_path
   };
   return result;
 });
@@ -249,7 +250,6 @@ ipcMain.handle("run-config", async (event, configPath, mode) => {
 });
 ipcMain.handle("run-sw", async (event, serverPath, clientPath, mode) => {
   console.log("--------- Running server in target ---------\n");
-  const server_ready_path = join(__dirname, "..", "server_ready.txt");
   if (fs.existsSync(server_ready_path)) {
     console.log("A server ready file already exists, removing it now.");
     try {

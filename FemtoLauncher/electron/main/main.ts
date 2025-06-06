@@ -12,9 +12,12 @@ import processList from './helpers/processList.ts';
 import getLatestVersionPath from './helpers/getLatestVersionPath.ts'
 import loadConfigContent from './helpers/loadConfigContent.ts';
 import saveConfig from './helpers/saveConfig.ts';
+import isDev from 'electron-is-dev';
 
+// Globals
 const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const server_ready_path = join(__dirname, ...(isDev ? [".."] : ["..", "..", ".."]), "server_ready.txt");
 
 // The built directory structure
 //
@@ -93,7 +96,7 @@ ipcMain.handle('get-paths', async(event, ...args) => {
 ipcMain.handle('startup-ui-logs', async(event) => {
   const result = {
     cwd: __dirname,
-    server_ready_path: join(__dirname, "..", "server_ready.txt"),
+    server_ready_path: server_ready_path,
   }
   return result;
 })
@@ -177,7 +180,6 @@ ipcMain.handle('run-config', async (event, configPath, mode) => {
 // 1) Run software. Renderer sends the mode (target v. sim).
 ipcMain.handle('run-sw', async (event, serverPath, clientPath, mode) => {
     console.log("--------- Running server in target ---------\n");
-    const server_ready_path = join(__dirname, "..", "server_ready.txt");
 
     // 1) Remove any old server_ready.txt
     if (fs.existsSync(server_ready_path)) {
