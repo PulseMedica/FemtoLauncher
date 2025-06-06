@@ -5,7 +5,7 @@
     left: 0;
     height: var(--titlebar-height); /* Match titleBarOverlay height */
     width: 100%;
-    background: var(--primary-dark-gray);
+    background: var(--titlebar-colour);
     color: white;
     display: flex;
     justify-content: flex-start; /* <-- aligns content to the left */

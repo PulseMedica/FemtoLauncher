@@ -16,6 +16,7 @@
   --gradient-primary-gray: linear-gradient(180deg, #212326 5.8%, #444C55 94.2%);
   --warning-yellow: #fce6a2;
   --warning-yellow-text: #856404;
+  --titlebar-colour: #212326;
 }
 
 body {
