@@ -181,6 +181,13 @@ ipcMain.handle("get-paths", async (event, ...args) => {
   const result = getLatestVersionPath();
   return result;
 });
+ipcMain.handle("startup-ui-logs", async (event) => {
+  const result = {
+    cwd: __dirname,
+    server_ready_path: join(__dirname, "..", "server_ready.txt")
+  };
+  return result;
+});
 ipcMain.handle("run-config", async (event, configPath, mode) => {
   console.log("------- run-config has been called -------");
   return new Promise((resolve, reject) => {
@@ -351,10 +358,6 @@ ipcMain.handle("read-config", async () => {
 ipcMain.handle("save-config", async (event, textContent) => {
   const res = await saveConfig(textContent);
   return res;
-});
-ipcMain.handle("debug", async (event) => {
-  const processes = await processList();
-  return processes;
 });
 export {
   MAIN_DIST,

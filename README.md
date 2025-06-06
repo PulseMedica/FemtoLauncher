@@ -40,3 +40,4 @@ Exploratory repository to develop a launcher application to launch the FIH softw
 - [x] Log messages in `output-container` are outputting the same message twice. *This is because of react dev mode. Not a real bug if ran in produyction*.
 - [x] When app is bundled into executable - need to include the fastlist.exe for psList() to work correctly. *Fixed this by turning it into a local helper instead of a node module, and then bundling the .exe into an "extras" directory.*
 - [x] Improve error handling and when I'm actually returning when the app is waiting for the server to start. Should exit on any stderr and only return control to user AFTER timeout, server_ready is found, or stderr.
+- [ ] Server-ready path on Gandalf appears to be different? It times out not being able to find it when trying to start server (both dev & production mode). But this is not the case if running locally.

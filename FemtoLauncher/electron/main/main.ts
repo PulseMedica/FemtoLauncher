@@ -83,16 +83,18 @@ app.whenReady().then(() => {
   }
 )
 
-// Helper functions
-function sleep(ms:number) {
-  return new Promise((resolve) => {
-    setTimeout(resolve, ms);
-  });
-}
-
 // 0) On startup, we run this function from the renderer that gets all the paths.
 ipcMain.handle('get-paths', async(event, ...args) => {
   const result = getLatestVersionPath();
+  return result;
+})
+
+// 0) On startup, run this function to get general system info (good for debugging purposes in production mode where we don't have node terminal)
+ipcMain.handle('startup-ui-logs', async(event) => {
+  const result = {
+    cwd: __dirname,
+    server_ready_path: join(__dirname, "..", "server_ready.txt"),
+  }
   return result;
 })
 
@@ -323,9 +325,4 @@ ipcMain.handle('read-config', async() => {
 ipcMain.handle('save-config', async(event, textContent) => {
   const res = await saveConfig(textContent);
   return res;
-})
-
-ipcMain.handle('debug', async(event) => {
-  const processes = await processList();
-  return processes;
 })

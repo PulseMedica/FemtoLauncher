@@ -20,14 +20,10 @@ function App() {
   const [configPath, setConfigPath] = useState("");
   const outputContainerRef = useRef<HTMLDivElement | null>(null);
 
-  // Get paths to server / client.
+  // Startup: Get paths, log details, etc.
   useEffect(() => {
-    let alreadySet = false; // To handle mount useEffects not re-running twice.
     setOutputLines([]);
     async function getPaths() {
-      // Honestly you can remove these next 2 lines if you want, the useEFfect() will just run twice due to react strict mode in development environment.
-      if (alreadySet) return;
-      alreadySet = true;
       const result = await window.ipcRenderer.invoke("get-paths");
       setVersionNumber(result.versionNumber);
       setServerPath(result.serverPath);
@@ -45,6 +41,16 @@ function App() {
         result.versionNumber
       ]);
     }
+
+    async function startupUiLogs() {
+      const result = await window.ipcRenderer.invoke("startup-ui-logs")
+      console.log("----- UI Startup Logs -----")
+      for (const [key, value] of Object.entries(result)) { // Print out system information that may be useful.
+        console.log(`${key}: ${value}`)
+      }
+    }
+
+    startupUiLogs();
     getPaths();
   }, []);
 
