@@ -1,0 +1,15 @@
+.titlebar {
+    text-align: left;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 31px; /* Match titleBarOverlay height */
+    width: 100%;
+    background: #444C55;
+    color: white;
+    display: flex;
+    justify-content: flex-start; /* <-- aligns content to the left */
+    align-items: center;         /* vertical centering */
+    padding-left: 12px;          /* add left spacing if needed */
+    -webkit-app-region: drag;
+}

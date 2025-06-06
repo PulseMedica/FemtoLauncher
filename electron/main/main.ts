@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain } from 'electron'
+import { app, BrowserWindow, ipcMain, screen } from 'electron'
 import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
@@ -40,6 +40,26 @@ process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL ? path.join(process.env.APP_ROOT, 
 let win: BrowserWindow | null
 
 function createWindow() {
+  const primaryDisplay = screen.getPrimaryDisplay();
+  const { width: screenWidth, height: screenHeight } = primaryDisplay.workAreaSize;
+
+  // Set window height based on various screen resolutions.
+  let scaleFactor = 1;
+
+  // For 1080p displays (and default):
+  const baseWidth = 1024;
+  const baseHeight = 768;
+
+  // For 1440P displays:
+  if (screenWidth > 1920 && screenHeight > 1080 ){
+    scaleFactor = 1.2;
+  }
+
+  // For 4K displays:
+  else if (screenWidth > 2560 && screenHeight > 1440 ){
+    scaleFactor = 1.4;
+  }
+
   win = new BrowserWindow({
     title:"FemtoLauncher",
     icon: path.join(process.env.VITE_PUBLIC, 'electron-vite.svg'),
@@ -48,7 +68,15 @@ function createWindow() {
     },
 
     // Window Styling
+    width: Math.round(baseWidth * scaleFactor),
+    height: Math.round(baseHeight * scaleFactor),
     autoHideMenuBar: true,
+    titleBarStyle: 'hidden',
+    titleBarOverlay: {
+      color: '#444C55',
+      symbolColor: 'white',
+      height: 20,
+    }, // Adds minimize, maximize, close back.
   })
 
   // Test active push message to Renderer-process.
