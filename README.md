@@ -41,3 +41,34 @@ Exploratory repository to develop a launcher application to launch the FIH softw
 - [x] When app is bundled into executable - need to include the fastlist.exe for psList() to work correctly. *Fixed this by turning it into a local helper instead of a node module, and then bundling the .exe into an "extras" directory.*
 - [x] Improve error handling and when I'm actually returning when the app is waiting for the server to start. Should exit on any stderr and only return control to user AFTER timeout, server_ready is found, or stderr.
 - [x] Server-ready path on Gandalf appears to be different? It times out not being able to find it when trying to start server (both dev & production mode). But this is not the case if running locally. *Found out that where it's looking for server-ready is incorrect*
+
+# React + TypeScript + Vite
+
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+
+Currently, two official plugins are available:
+
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+
+## Expanding the ESLint configuration
+
+If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+
+- Configure the top-level `parserOptions` property like this:
+
+```js
+export default {
+  // other rules...
+  parserOptions: {
+    ecmaVersion: 'latest',
+    sourceType: 'module',
+    project: ['./tsconfig.json', './tsconfig.node.json'],
+    tsconfigRootDir: __dirname,
+  },
+}
+```
+
+- Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
+- Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
+- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
