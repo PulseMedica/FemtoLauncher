@@ -30,7 +30,7 @@ Exploratory repository to develop a launcher application to launch the FIH softw
 
 - [x] Launch software should only be enabled if all server/client artifacts have been found.
 - [x] Display (deploy) version number on the UI.
-- [ ] Have an "onStartup" for production that console.logs (to the renderer side) for good debugging purposes.
+- [x] Have an "onStartup" for production that console.logs (to the renderer side) for good debugging purposes.
 - [ ] Unit tests.
 - [ ] Test edge case scenarios and ensure correct console messages.
 

@@ -197,7 +197,7 @@ ipcMain.handle('run-sw', async (event, serverPath, clientPath, mode) => {
 
     // 3) Start a unified Promise watcher
     return await new Promise<{ success: boolean; message: string }>((resolve) => {
-        const timeout = 45 * 1000;
+        const timeout = 60 * 1000;
         let interval: NodeJS.Timeout;
         let timedOut = false;
 
