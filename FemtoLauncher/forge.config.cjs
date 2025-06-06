@@ -7,6 +7,9 @@ module.exports = {
     extraResource: [ // Moves these resources to be next to app.asar (IE: "unpacks" it)
       "./extras/fastlist-0.3.0-x64.exe",
       "./extras/fastlist-0.3.0-x86.exe",
+    ],
+    ignore: [
+      /server_ready\.txt$/, // Ignore when packaging into app.asar.
     ]
   },
   rebuildConfig: {},
